@@ -4,6 +4,7 @@
 
 .group {
     position: relative;
+    margin-right: 10px;
 }
 
 input {
@@ -13,6 +14,7 @@ input {
     width: 100%;
     border: none;
     border-bottom: 1px solid rgba(45, 35, 66, 0.4);
+    background: transparent;
 }
 
 input:focus {

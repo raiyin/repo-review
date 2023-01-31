@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import MyButton from '../MyButton/MyButton';
+import MyButton from '../ui/MyButton/MyButton';
 import cl from './BlackListItem.module.css';
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { faXmark } from '@fortawesome/free-solid-svg-icons';

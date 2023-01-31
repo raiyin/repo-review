@@ -9,13 +9,11 @@ import { faGear, faUsers } from '@fortawesome/free-solid-svg-icons';
 export default function FormSearching() {
     const [btnText, setBtnText] = useState('Показать настройки');
     const [showOrHideSettings, setShowOrHideSettings] = useState(false);
-    const [formSize, setFormSize] = useState(0);
     library.add(faGear);
     library.add(faUsers);
 
     function changeVisibility() {
         setBtnText(showOrHideSettings ? 'Показать настройки' : 'Скрыть настройки');
-
     }
 
     const changeVision = () => {
