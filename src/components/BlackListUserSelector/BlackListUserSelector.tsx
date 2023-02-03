@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, FC } from 'react';
 import MyButton from '../ui/MyButton/MyButton';
 import cl from './BlackListUserSelector.module.css';
 import { library } from "@fortawesome/fontawesome-svg-core";
@@ -6,7 +6,7 @@ import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import MyInput from '../ui/MyInput/MyInput';
 
 
-const BlackListUserSelector: React.FC = () => {
+const BlackListUserSelector: FC = () => {
 
     const [userImg, setUserImg] = useState('');
 
