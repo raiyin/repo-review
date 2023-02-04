@@ -1,4 +1,7 @@
 
+interface GitHubRepoObject {
+    name: string;
+}
 
 export default class GithubService {
     static async getUserRepos(user: string) {
@@ -14,11 +17,11 @@ export default class GithubService {
         });
 
         if (response.ok) {
-            console.log('17' + response);
-            return response.json();
+            let repoArray: Array<GitHubRepoObject> = await response.json();
+            let reposNames = repoArray.map(item => item.name);
+            return reposNames;
         }
 
-        console.log('21' + response);
         const error = {
             status: response.status,
             customError: 'wtfAsync',
