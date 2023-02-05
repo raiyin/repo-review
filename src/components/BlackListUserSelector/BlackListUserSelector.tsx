@@ -22,7 +22,7 @@ const BlackListUserSelector: FC = () => {
                     <div className={cl.img_stub} />
                 </>
             )}
-            <MyInput placeholder="Чёрный список" />
+            {/* <MyInput placeholder="Чёрный список" /> */}
             <MyButton text='' onClick={() => { }} icon_type='plus' />
         </div>
 
