@@ -1,6 +1,10 @@
 
-interface GitHubStringObject {
+interface GitHubRepoObject {
     name: string;
+}
+
+interface GitHubContribObject {
+    login: string;
 }
 
 export default class GithubService {
@@ -17,7 +21,7 @@ export default class GithubService {
         });
 
         if (response.ok) {
-            let repoArray: Array<GitHubStringObject> = await response.json();
+            let repoArray: Array<GitHubRepoObject> = await response.json();
             let reposNames = repoArray.map(item => item.name);
             return reposNames;
         }
@@ -31,9 +35,10 @@ export default class GithubService {
 
 
     static async getRepoContributors(user: string, repo: string) {
-        let url = 'https://api.github.com/{user}/{repo}/contributors';
+        let url = 'https://api.github.com/repos/{user}/{repo}/contributors';
         url = url.replace('{user}', user);
         url = url.replace('{repo}', repo);
+        console.log(url);
         const response = await fetch(url, {
             method: 'GET',
             headers: {
@@ -43,8 +48,10 @@ export default class GithubService {
         });
 
         if (response.ok) {
-            let contribsArray: Array<GitHubStringObject> = await response.json();
-            let contribsNames = contribsArray.map(item => item.name);
+            let contribsArray: Array<GitHubContribObject> = await response.json();
+            console.log('contribsArray' + contribsArray);
+            let contribsNames = contribsArray.map(item => item.login);
+            console.log('contribsArray' + contribsNames);
             return contribsNames;
         }
 

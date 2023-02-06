@@ -18,9 +18,9 @@ export default function FormSearching() {
     const [userRepos, setUserRepos] = useState<{ value: string; }[]>([]);
     const [repoOptions, setRepoOptions] = useState<{ value: string; }[]>([]);
 
-    const [reviewer, setReviewer] = useState('');
-    const [repoReviewers, setRepoReviewers] = useState<{ value: string; }[]>([]);
-    const [blReviewersOptions, setBlReviewersOptions] = useState<{ value: string; }[]>([]);
+    const [contrib, setContrib] = useState('');
+    const [repoContribs, setRepoContribs] = useState<{ value: string; }[]>([]);
+    const [blContribsOptions, setBlContribsOptions] = useState<{ value: string; }[]>([]);
 
     library.add(faGear);
     library.add(faUsers);
@@ -36,33 +36,52 @@ export default function FormSearching() {
         setUserRepos(responseObj);
     });
 
-    const [fetchReviewers, reviewrsError] = useFetching(async (repo: string) => {
+    const [fetchContribs, reviewrsError] = useFetching(async (user: string, repo: string) => {
         let response: string[];
-        if (!repo)
+        if (!repo || !user)
             response = [];
         else
             response = await GithubService.getRepoContributors(user, repo);
 
         let responseObj: Array<{ value: string; }> = response.map(item => ({ value: item }));
-        setUserRepos(responseObj);
+        setRepoContribs(responseObj);
+
+        console.log(responseObj);
     });
 
     useEffect(() => {
         fetchRepos(user);
     }, [user]);
 
-    const onSearch = (searchText: string) => {
+    useEffect(() => {
+        if (userRepos.filter((item: { value: string; }) => item.value === repo)) {
+            fetchContribs(user, repo);
+        }
+    }, [repo]);
+
+    const onSearchRepos = (searchText: string) => {
         setRepoOptions(
             !searchText ? [] : userRepos.filter((item: { value: string; }) => item.value.includes(searchText)),
         );
     };
 
+    const onSearchContribs = (searchText: string) => {
+        setBlContribsOptions(
+            !searchText ? [] : repoContribs.filter((item: { value: string; }) => item.value.includes(searchText)),
+        );
+    };
+
+
     const changeLogin = (event: React.ChangeEvent<HTMLInputElement>) => {
         setUser(event.currentTarget.value);
     };
 
-    const onChange = (data: string) => {
+    const onChangeRepo = (data: string) => {
         setRepo(data);
+    };
+
+    const onChangeContrib = (data: string) => {
+        setContrib(data);
     };
 
     function changeVisibility() {
@@ -90,18 +109,18 @@ export default function FormSearching() {
                     <AutoComplete
                         value={repo}
                         options={repoOptions}
-                        onSearch={onSearch}
-                        onChange={onChange}
+                        onSearch={onSearchRepos}
+                        onChange={onChangeRepo}
                         placeholder='Название репозитория' />
                     <AutoComplete
-                        value={reviewer}
-                        options={blReviewersOptions}
-                        onSearch={onSearch}
-                        onChange={onChange}
+                        value={contrib}
+                        options={blContribsOptions}
+                        onSearch={onSearchContribs}
+                        onChange={onChangeContrib}
                         placeholder='В чёрный список' />
                     <BlackList />
                     <Input
-                        value={reviewer}
+                        // value={}
                         onChange={() => { }}
                         type="text"
                         name='repo'
