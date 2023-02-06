@@ -1,13 +1,14 @@
 
-interface GitHubRepoObject {
+export interface GitHubRepoObject {
     name: string;
 }
 
-interface GitHubContribObject {
+export interface GitHubContribObject {
     login: string;
+    avatar_url: string;
 }
 
-export default class GithubService {
+export class GithubService {
 
     static async getUserRepos(user: string) {
         let url = 'https://api.github.com/users/{user}/repos';
@@ -49,8 +50,7 @@ export default class GithubService {
 
         if (response.ok) {
             let contribsArray: Array<GitHubContribObject> = await response.json();
-            console.log('contribsArray' + contribsArray);
-            let contribsNames = contribsArray.map(item => item.login);
+            let contribsNames: Array<GitHubContribObject> = contribsArray.map(item => ({ login: item.login, avatar_url: item.avatar_url }));
             console.log('contribsArray' + contribsNames);
             return contribsNames;
         }

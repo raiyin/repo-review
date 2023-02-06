@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import BlackList from '../BlackList/BlackList';
 import MyButton from '../ui/MyButton/MyButton';
 import { useFetching } from '../../hooks/useFetching';
 import cl from './FormSearching.module.css';
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { faGear, faUsers } from '@fortawesome/free-solid-svg-icons';
-import GithubService from '../../api/GithubService';
+import { GithubService, GitHubContribObject } from '../../api/GithubService';
 import { Button, Input, AutoComplete } from 'antd';
+import BlackListItem from '../BlackListItem/BlackListItem';
 
 export default function FormSearching() {
     const [btnText, setBtnText] = useState('Показать настройки');
@@ -19,7 +19,7 @@ export default function FormSearching() {
     const [repoOptions, setRepoOptions] = useState<{ value: string; }[]>([]);
 
     const [contrib, setContrib] = useState('');
-    const [repoContribs, setRepoContribs] = useState<{ value: string; }[]>([]);
+    const [repoContribs, setRepoContribs] = useState<Array<GitHubContribObject>>([]);
     const [blContribsOptions, setBlContribsOptions] = useState<{ value: string; }[]>([]);
 
     library.add(faGear);
@@ -37,16 +37,18 @@ export default function FormSearching() {
     });
 
     const [fetchContribs, reviewrsError] = useFetching(async (user: string, repo: string) => {
-        let response: string[];
+        let response: GitHubContribObject[];
         if (!repo || !user)
             response = [];
         else
             response = await GithubService.getRepoContributors(user, repo);
 
-        let responseObj: Array<{ value: string; }> = response.map(item => ({ value: item }));
-        setRepoContribs(responseObj);
+        // let responseObj: Array<GitHubContribObject> = response.map(item => ({ value: item }));
+        // setRepoContribs(responseObj);
+        //let responseObj: Array<GitHubContribObject> = response.map(item => ({ value: item }));
+        setRepoContribs(response);
 
-        console.log(responseObj);
+        console.log(response);
     });
 
     useEffect(() => {
@@ -67,10 +69,9 @@ export default function FormSearching() {
 
     const onSearchContribs = (searchText: string) => {
         setBlContribsOptions(
-            !searchText ? [] : repoContribs.filter((item: { value: string; }) => item.value.includes(searchText)),
+            !searchText ? [] : repoContribs.filter((item: GitHubContribObject) => item.login.includes(searchText)).map(item => ({ value: item.login })),
         );
     };
-
 
     const changeLogin = (event: React.ChangeEvent<HTMLInputElement>) => {
         setUser(event.currentTarget.value);
@@ -118,7 +119,10 @@ export default function FormSearching() {
                         onSearch={onSearchContribs}
                         onChange={onChangeContrib}
                         placeholder='В чёрный список' />
-                    <BlackList />
+
+
+                    <Button>Добавить в чёрный список</Button>
+                    <BlackListItem login='Pixi' img='https://randomuser.me/api/portraits/men/33.jpg' />
                     <Input
                         // value={}
                         onChange={() => { }}
