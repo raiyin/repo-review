@@ -25,6 +25,9 @@ export default function FormSearching() {
     const [blItem, setBlItem] = useState<GitHubContribObject>({ login: '', avatar_url: '' });
     const [blItems, setBlItems] = useState<Array<GitHubContribObject>>([]);
 
+
+    const [reviewers, setReviewers] = useState<Array<GitHubContribObject>>([]);
+
     library.add(faGear);
     library.add(faUsers);
 
@@ -88,6 +91,22 @@ export default function FormSearching() {
         setBlItems([...blItems, newBlItem]);
     };
 
+    const AddReviewer = (e: React.MouseEvent) => {
+        const newReviewer = {
+            login: contrib,
+            avatar_url: repoContribs.filter(item => item.login === contrib)[0].avatar_url
+        };
+        createReviewer(newReviewer);
+    };
+
+    const createReviewer = (newReviewer: GitHubContribObject) => {
+        setReviewers([...reviewers, newReviewer]);
+    };
+
+    const removeReviewer = (reviewer: GitHubContribObject) => {
+        setReviewers(reviewers.filter(item => item.login !== reviewer.login));
+    };
+
     const changeLogin = (event: React.ChangeEvent<HTMLInputElement>) => {
         setUser(event.currentTarget.value);
     };
@@ -138,7 +157,8 @@ export default function FormSearching() {
 
                     <Button onClick={AddUserToBlackList}>Добавить в чёрный список</Button>
                     <UserList blItems={blItems} remove={removeBlItem}></UserList>
-                    <MyButton onClick={() => { }} text='Сгенерировать' icon_type='users' />
+                    <Button onClick={AddReviewer} >Сгенерировать</Button>
+                    <UserList blItems={reviewers} remove={removeReviewer}></UserList>
                 </>
             ) : (
                 <></>
