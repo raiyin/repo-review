@@ -6,7 +6,7 @@ import { library } from "@fortawesome/fontawesome-svg-core";
 import { faGear, faUsers } from '@fortawesome/free-solid-svg-icons';
 import { GithubService, GitHubContribObject } from '../../api/GithubService';
 import { Button, Input, AutoComplete } from 'antd';
-import BlackListItem from '../BlackListItem/BlackListItem';
+import BlackList from '../BlackList/BlackList';
 
 export default function FormSearching() {
     const [btnText, setBtnText] = useState('Показать настройки');
@@ -21,6 +21,9 @@ export default function FormSearching() {
     const [contrib, setContrib] = useState('');
     const [repoContribs, setRepoContribs] = useState<Array<GitHubContribObject>>([]);
     const [blContribsOptions, setBlContribsOptions] = useState<{ value: string; }[]>([]);
+
+    const [blItem, setBlItem] = useState<GitHubContribObject>({ login: '', avatar_url: '' });
+    const [blItems, setBlItems] = useState<Array<GitHubContribObject>>([]);
 
     library.add(faGear);
     library.add(faUsers);
@@ -42,10 +45,6 @@ export default function FormSearching() {
             response = [];
         else
             response = await GithubService.getRepoContributors(user, repo);
-
-        // let responseObj: Array<GitHubContribObject> = response.map(item => ({ value: item }));
-        // setRepoContribs(responseObj);
-        //let responseObj: Array<GitHubContribObject> = response.map(item => ({ value: item }));
         setRepoContribs(response);
 
         console.log(response);
@@ -71,6 +70,22 @@ export default function FormSearching() {
         setBlContribsOptions(
             !searchText ? [] : repoContribs.filter((item: GitHubContribObject) => item.login.includes(searchText)).map(item => ({ value: item.login })),
         );
+    };
+
+    const AddUserToBlackList = (e: React.MouseEvent) => {
+        const newBlItem = {
+            login: contrib,
+            avatar_url: 'https://avatars.githubusercontent.com/u/3396686?v=4'
+        };
+        createBlItem(newBlItem);
+    };
+
+    const removeBlItem = (blItem: GitHubContribObject) => {
+        setBlItems(blItems.filter(item => item.login !== blItem.login));
+    };
+
+    const createBlItem = (newBlItem: GitHubContribObject) => {
+        setBlItems([...blItems, newBlItem]);
     };
 
     const changeLogin = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -121,10 +136,9 @@ export default function FormSearching() {
                         placeholder='В чёрный список' />
 
 
-                    <Button>Добавить в чёрный список</Button>
-                    <BlackListItem login='Pixi' img='https://randomuser.me/api/portraits/men/33.jpg' />
+                    <Button onClick={AddUserToBlackList}>Добавить в чёрный список</Button>
+                    <BlackList blItems={blItems} remove={removeBlItem}></BlackList>
                     <Input
-                        // value={}
                         onChange={() => { }}
                         type="text"
                         name='repo'

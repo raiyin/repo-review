@@ -1,19 +1,33 @@
-import React, { useState } from 'react';
 import BlackListItem from '../BlackListItem/BlackListItem';
-import BlackListUserSelector from '../BlackListUserSelector/BlackListUserSelector';
-import MyInput from '../ui/MyInput/MyInput';
+import { GitHubContribObject } from '../../api/GithubService';
 import cl from './BlackList.module.css';
+import { FC } from 'react';
 
-export default function BlackList() {
+interface BlackListProps {
+    blItems: Array<GitHubContribObject>;
+    remove: Function;
+}
+
+const BlackList: FC<BlackListProps> = ({ blItems, remove }: BlackListProps) => {
+    if (!blItems.length) {
+        return (
+            <div></div>
+        );
+    }
 
     return (
         <>
-            <BlackListUserSelector />
             <div className={cl.leaderboard}>
                 <div className="leaderboard__profiles">
-                    <BlackListItem login='Pixi' img='https://randomuser.me/api/portraits/men/33.jpg' />
+
+                    {blItems.map((blItem) => (
+                        <BlackListItem key={blItem.login} remove={remove} blItem={blItem} />
+                    ))}
                 </div>
             </div>
         </>
     );
-}
+};
+
+
+export default BlackList;

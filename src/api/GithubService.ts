@@ -1,4 +1,3 @@
-
 export interface GitHubRepoObject {
     name: string;
 }
