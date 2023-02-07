@@ -1,14 +1,14 @@
-import BlackListItem from '../BlackListItem/BlackListItem';
+import UserListItem from '../UserListItem/UserListItem';
 import { GitHubContribObject } from '../../api/GithubService';
-import cl from './BlackList.module.css';
+import cl from './UserList.module.css';
 import { FC } from 'react';
 
-interface BlackListProps {
+interface UserListProps {
     blItems: Array<GitHubContribObject>;
     remove: Function;
 }
 
-const BlackList: FC<BlackListProps> = ({ blItems, remove }: BlackListProps) => {
+const BlackList: FC<UserListProps> = ({ blItems, remove }: UserListProps) => {
     if (!blItems.length) {
         return (
             <div></div>
@@ -21,7 +21,7 @@ const BlackList: FC<BlackListProps> = ({ blItems, remove }: BlackListProps) => {
                 <div className="leaderboard__profiles">
 
                     {blItems.map((blItem) => (
-                        <BlackListItem key={blItem.login} remove={remove} blItem={blItem} />
+                        <UserListItem key={blItem.login} remove={remove} blItem={blItem} />
                     ))}
                 </div>
             </div>

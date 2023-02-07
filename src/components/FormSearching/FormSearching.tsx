@@ -6,7 +6,7 @@ import { library } from "@fortawesome/fontawesome-svg-core";
 import { faGear, faUsers } from '@fortawesome/free-solid-svg-icons';
 import { GithubService, GitHubContribObject } from '../../api/GithubService';
 import { Button, Input, AutoComplete } from 'antd';
-import BlackList from '../BlackList/BlackList';
+import UserList from '../UserList/UserList';
 
 export default function FormSearching() {
     const [btnText, setBtnText] = useState('Показать настройки');
@@ -137,12 +137,7 @@ export default function FormSearching() {
 
 
                     <Button onClick={AddUserToBlackList}>Добавить в чёрный список</Button>
-                    <BlackList blItems={blItems} remove={removeBlItem}></BlackList>
-                    <Input
-                        onChange={() => { }}
-                        type="text"
-                        name='repo'
-                        placeholder="Ревьюер" />
+                    <UserList blItems={blItems} remove={removeBlItem}></UserList>
                     <MyButton onClick={() => { }} text='Сгенерировать' icon_type='users' />
                 </>
             ) : (
