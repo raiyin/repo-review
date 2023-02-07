@@ -75,7 +75,7 @@ export default function FormSearching() {
     const AddUserToBlackList = (e: React.MouseEvent) => {
         const newBlItem = {
             login: contrib,
-            avatar_url: 'https://avatars.githubusercontent.com/u/3396686?v=4'
+            avatar_url: repoContribs.filter(item => item.login === contrib)[0].avatar_url
         };
         createBlItem(newBlItem);
     };
