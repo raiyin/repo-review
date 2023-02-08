@@ -4,7 +4,7 @@ import { useFetching } from '../../hooks/useFetching';
 import cl from './FormSearching.module.css';
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { faGear, faUsers } from '@fortawesome/free-solid-svg-icons';
-import { GithubService, GitHubContribObject } from '../../api/GithubService';
+import { GitHubContribObject, getUserRepos, getRepoContributors } from '../../api/GithubService';
 import { Button, Input, AutoComplete } from 'antd';
 import UserList from '../UserList/UserList';
 
@@ -36,7 +36,7 @@ export default function FormSearching() {
         if (!user)
             response = [];
         else
-            response = await GithubService.getUserRepos(user);
+            response = await getUserRepos(user);
 
         let responseObj: Array<{ value: string; }> = response.map(item => ({ value: item }));
         setUserRepos(responseObj);
@@ -47,7 +47,7 @@ export default function FormSearching() {
         if (!repo || !user)
             response = [];
         else
-            response = await GithubService.getRepoContributors(user, repo);
+            response = await getRepoContributors(user, repo);
         setRepoContribs(response);
 
         console.log(response);

@@ -7,57 +7,54 @@ export interface GitHubContribObject {
     avatar_url: string;
 }
 
-export class GithubService {
+export const getUserRepos = async (user: string) => {
+    let url = 'https://api.github.com/users/{user}/repos';
+    url = url.replace('{user}', user);
+    const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/vnd.github+json'
+        },
+        redirect: 'follow',
+    });
 
-    static async getUserRepos(user: string) {
-        let url = 'https://api.github.com/users/{user}/repos';
-        url = url.replace('{user}', user);
-        const response = await fetch(url, {
-            method: 'GET',
-            headers: {
-                'Accept': 'application/vnd.github+json'
-            },
-            redirect: 'follow',
-        });
-
-        if (response.ok) {
-            let repoArray: Array<GitHubRepoObject> = await response.json();
-            let reposNames = repoArray.map(item => item.name);
-            return reposNames;
-        }
-
-        const error = {
-            status: response.status,
-            customError: 'wtfAsync',
-        };
-        throw error;
+    if (response.ok) {
+        let repoArray: Array<GitHubRepoObject> = await response.json();
+        let reposNames = repoArray.map(item => item.name);
+        return reposNames;
     }
 
+    const error = {
+        status: response.status,
+        customError: 'wtfAsync',
+    };
+    throw error;
+};
 
-    static async getRepoContributors(user: string, repo: string) {
-        let url = 'https://api.github.com/repos/{user}/{repo}/contributors';
-        url = url.replace('{user}', user);
-        url = url.replace('{repo}', repo);
-        console.log(url);
-        const response = await fetch(url, {
-            method: 'GET',
-            headers: {
-                'Accept': 'application/vnd.github+json'
-            },
-            redirect: 'follow',
-        });
 
-        if (response.ok) {
-            let contribsArray: Array<GitHubContribObject> = await response.json();
-            let contribsNames: Array<GitHubContribObject> = contribsArray.map(item => ({ login: item.login, avatar_url: item.avatar_url }));
-            console.log('contribsArray' + contribsNames);
-            return contribsNames;
-        }
+export const getRepoContributors = async (user: string, repo: string) => {
+    let url = 'https://api.github.com/repos/{user}/{repo}/contributors';
+    url = url.replace('{user}', user);
+    url = url.replace('{repo}', repo);
+    console.log(url);
+    const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/vnd.github+json'
+        },
+        redirect: 'follow',
+    });
 
-        const error = {
-            status: response.status,
-            customError: 'wtfAsync',
-        };
-        throw error;
+    if (response.ok) {
+        let contribsArray: Array<GitHubContribObject> = await response.json();
+        let contribsNames: Array<GitHubContribObject> = contribsArray.map(item => ({ login: item.login, avatar_url: item.avatar_url }));
+        console.log('contribsArray' + contribsNames);
+        return contribsNames;
     }
-}
+
+    const error = {
+        status: response.status,
+        customError: 'wtfAsync',
+    };
+    throw error;
+};
