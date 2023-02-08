@@ -56,7 +56,6 @@ export default function FormSearching() {
         console.log(response);
     });
 
-
     useEffect(() => {
         try {
             var storage = window['localStorage'],
@@ -65,6 +64,10 @@ export default function FormSearching() {
             storage.removeItem(x);
             setIsStorageAvailable(true);
             setLocalStorage(window.localStorage);
+
+            if (isStorageAvailable) {
+
+            }
         }
         catch (e) {
             setIsStorageAvailable(false);

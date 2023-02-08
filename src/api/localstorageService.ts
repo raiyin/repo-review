@@ -40,6 +40,10 @@ export function getAllUsersFromBlackList() {
     return blackList;
 }
 
+export function getMainUser() {
+    return localStorage.getItem(mainUserKey);
+}
+
 export function setMainUser(login: string, avatar_url: string) {
     localStorage.setItem(mainUserKey, JSON.stringify({ 'login': login, 'avatar_url': avatar_url }));
 }
@@ -48,12 +52,20 @@ export function unsetMainUser() {
     localStorage.removeItem(mainUserKey);
 }
 
+export function getRepo() {
+    return localStorage.getItem(repoNameKey);
+}
+
 export function setRepo(repo: string) {
     localStorage.setItem(repoNameKey, repo);
 }
 
 export function unsetRepo() {
     localStorage.removeItem(repoNameKey);
+}
+
+export function getReviewer() {
+    return localStorage.getItem(reviewerKey);
 }
 
 export function setReviewer(login: string, avatar_url: string) {
