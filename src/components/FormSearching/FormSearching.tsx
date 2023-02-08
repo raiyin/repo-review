@@ -7,6 +7,7 @@ import { faGear, faUsers } from '@fortawesome/free-solid-svg-icons';
 import { GitHubContribObject, getUserRepos, getRepoContributors } from '../../api/GithubService';
 import { Button, Input, AutoComplete } from 'antd';
 import UserList from '../UserList/UserList';
+import { getRandomInt } from '../../api/utils';
 
 export default function FormSearching() {
     const [btnText, setBtnText] = useState('Показать настройки');
@@ -95,10 +96,20 @@ export default function FormSearching() {
     };
 
     const AddReviewer = (e: React.MouseEvent) => {
+        // Защищаем от вставки нескольких ревьюеров.
         if (reviewers.length === 0) {
+
+            // Генерируем ревьюера.
+            let candidateIndex = getRandomInt(repoContribs.length);
+            let candidateLogin = repoContribs[candidateIndex].login;
+            while (blItems.filter(item => item.login === candidateLogin).length !== 0) {
+                candidateIndex = getRandomInt(repoContribs.length);
+                candidateLogin = repoContribs[candidateIndex].login;
+            }
+
             const newReviewer = {
-                login: contrib,
-                avatar_url: repoContribs.filter(item => item.login === contrib)[0].avatar_url
+                login: candidateLogin,
+                avatar_url: repoContribs.filter(item => item.login === candidateLogin)[0].avatar_url
             };
             createReviewer(newReviewer);
         }
@@ -162,7 +173,7 @@ export default function FormSearching() {
 
                     <Button onClick={AddUserToBlackList}>Добавить в чёрный список</Button>
                     <UserList blItems={blItems} remove={removeBlItem}></UserList>
-                    <Button onClick={AddReviewer} >Сгенерировать</Button>
+                    <Button onClick={AddReviewer} >Генерировать ревьюера</Button>
                     <UserList blItems={reviewers} remove={removeReviewer}></UserList>
                 </>
             ) : (
