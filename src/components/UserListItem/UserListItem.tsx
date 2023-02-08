@@ -3,7 +3,7 @@ import MyButton from '../ui/MyButton/MyButton';
 import cl from './UserListItem.module.css';
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { faXmark } from '@fortawesome/free-solid-svg-icons';
-import { GitHubContribObject } from '../../api/GithubService';
+import { GitHubContribObject } from '../../api/githubService';
 
 interface BlackListItem {
     blItem: GitHubContribObject;

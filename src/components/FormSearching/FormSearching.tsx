@@ -4,11 +4,12 @@ import { useFetching } from '../../hooks/useFetching';
 import cl from './FormSearching.module.css';
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { faGear, faUsers } from '@fortawesome/free-solid-svg-icons';
-import { GitHubContribObject, getUserRepos, getRepoContributors } from '../../api/GithubService';
+import { GitHubContribObject, getUserRepos, getRepoContributors } from '../../api/githubService';
 import { Button, Input, AutoComplete } from 'antd';
 import UserList from '../UserList/UserList';
 import { getRandomInt } from '../../api/utils';
 import debounce from 'lodash/debounce';
+import * as lsService from '../../api/localstorageService';
 
 export default function FormSearching() {
     const [btnText, setBtnText] = useState('Показать настройки');
@@ -24,11 +25,11 @@ export default function FormSearching() {
     const [repoContribs, setRepoContribs] = useState<Array<GitHubContribObject>>([]);
     const [blContribsOptions, setBlContribsOptions] = useState<{ value: string; }[]>([]);
 
-    const [blItem, setBlItem] = useState<GitHubContribObject>({ login: '', avatar_url: '' });
     const [blItems, setBlItems] = useState<Array<GitHubContribObject>>([]);
-
-
     const [reviewers, setReviewers] = useState<Array<GitHubContribObject>>([]);
+
+    const [isStorageAvailable, setIsStorageAvailable] = useState(false);
+    const [localStorage, setLocalStorage] = useState({});
 
     library.add(faGear);
     library.add(faUsers);
@@ -54,6 +55,21 @@ export default function FormSearching() {
 
         console.log(response);
     });
+
+
+    useEffect(() => {
+        try {
+            var storage = window['localStorage'],
+                x = '__storage_test__';
+            storage.setItem(x, x);
+            storage.removeItem(x);
+            setIsStorageAvailable(true);
+            setLocalStorage(window.localStorage);
+        }
+        catch (e) {
+            setIsStorageAvailable(false);
+        }
+    }, []);
 
     useEffect(() => {
         fetchRepos(user);

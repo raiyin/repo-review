@@ -1,5 +1,5 @@
 import UserListItem from '../UserListItem/UserListItem';
-import { GitHubContribObject } from '../../api/GithubService';
+import { GitHubContribObject } from '../../api/githubService';
 import cl from './UserList.module.css';
 import { FC } from 'react';
 
