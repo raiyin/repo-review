@@ -95,11 +95,13 @@ export default function FormSearching() {
     };
 
     const AddReviewer = (e: React.MouseEvent) => {
-        const newReviewer = {
-            login: contrib,
-            avatar_url: repoContribs.filter(item => item.login === contrib)[0].avatar_url
-        };
-        createReviewer(newReviewer);
+        if (reviewers.length === 0) {
+            const newReviewer = {
+                login: contrib,
+                avatar_url: repoContribs.filter(item => item.login === contrib)[0].avatar_url
+            };
+            createReviewer(newReviewer);
+        }
     };
 
     const createReviewer = (newReviewer: GitHubContribObject) => {
