@@ -8,6 +8,7 @@ import { GitHubContribObject, getUserRepos, getRepoContributors } from '../../ap
 import { Button, Input, AutoComplete } from 'antd';
 import UserList from '../UserList/UserList';
 import { getRandomInt } from '../../api/utils';
+import debounce from 'lodash/debounce';
 
 export default function FormSearching() {
     const [btnText, setBtnText] = useState('Показать настройки');
@@ -161,7 +162,7 @@ export default function FormSearching() {
                         value={repo}
                         options={repoOptions}
                         onSearch={onSearchRepos}
-                        onChange={onChangeRepo}
+                        onChange={debounce(onChangeRepo, 300)}
                         placeholder='Название репозитория' />
                     <AutoComplete
                         value={contrib}
