@@ -76,11 +76,14 @@ export default function FormSearching() {
     };
 
     const AddUserToBlackList = (e: React.MouseEvent) => {
-        const newBlItem = {
-            login: contrib,
-            avatar_url: repoContribs.filter(item => item.login === contrib)[0].avatar_url
-        };
-        createBlItem(newBlItem);
+        // Защищаем от повторного добавления в чёрный список.
+        if (blItems.filter(item => item.login == contrib).length === 0) {
+            const newBlItem = {
+                login: contrib,
+                avatar_url: repoContribs.filter(item => item.login === contrib)[0].avatar_url
+            };
+            createBlItem(newBlItem);
+        }
     };
 
     const removeBlItem = (blItem: GitHubContribObject) => {
