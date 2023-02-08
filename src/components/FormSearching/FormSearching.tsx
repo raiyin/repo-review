@@ -9,7 +9,7 @@ import { Button, Input, AutoComplete } from 'antd';
 import UserList from '../UserList/UserList';
 import { getRandomInt } from '../../api/utils';
 import debounce from 'lodash/debounce';
-import * as lsService from '../../api/localstorageService';
+import * as ls from '../../api/localstorageService';
 
 export default function FormSearching() {
     const [btnText, setBtnText] = useState('Показать настройки');
@@ -28,7 +28,6 @@ export default function FormSearching() {
     const [blItems, setBlItems] = useState<Array<GitHubContribObject>>([]);
     const [reviewers, setReviewers] = useState<Array<GitHubContribObject>>([]);
 
-    const [isStorageAvailable, setIsStorageAvailable] = useState(false);
     const [localStorage, setLocalStorage] = useState({});
 
     library.add(faGear);
@@ -52,25 +51,44 @@ export default function FormSearching() {
         else
             response = await getRepoContributors(user, repo);
         setRepoContribs(response);
-
-        console.log(response);
     });
 
     useEffect(() => {
         try {
-            var storage = window['localStorage'],
-                x = '__storage_test__';
-            storage.setItem(x, x);
-            storage.removeItem(x);
-            setIsStorageAvailable(true);
             setLocalStorage(window.localStorage);
 
-            if (isStorageAvailable) {
+            let localUser = ls.getMainUser();
+            if (localUser !== null) {
+                setUser(localUser);
+            }
 
+            let localRepo = ls.getRepo();
+            if (localRepo !== null) {
+                setRepo(localRepo);
+            }
+
+            let localBlackList = ls.getAllUsersFromBlackList();
+            if (localBlackList !== null) {
+                localBlackList.map(item => {
+                    const newBlItem = {
+                        login: item.login,
+                        avatar_url: item.avatar_url
+                    };
+                    createBlItem(newBlItem);
+                });
+            }
+
+
+            let localReviewer = ls.getReviewer();
+            if (localReviewer !== null) {
+                const newReviewer = {
+                    login: localReviewer.login,
+                    avatar_url: localReviewer.avatar_url
+                };
+                createReviewer(newReviewer);
             }
         }
         catch (e) {
-            setIsStorageAvailable(false);
         }
     }, []);
 
@@ -104,6 +122,7 @@ export default function FormSearching() {
                 avatar_url: repoContribs.filter(item => item.login === contrib)[0].avatar_url
             };
             createBlItem(newBlItem);
+            ls.addUserToBlackList(newBlItem.login, newBlItem.avatar_url);
         }
     };
 
@@ -132,6 +151,7 @@ export default function FormSearching() {
                 avatar_url: repoContribs.filter(item => item.login === candidateLogin)[0].avatar_url
             };
             createReviewer(newReviewer);
+            ls.setReviewer(newReviewer.login, newReviewer.avatar_url);
         }
     };
 
@@ -145,10 +165,12 @@ export default function FormSearching() {
 
     const changeLogin = (event: React.ChangeEvent<HTMLInputElement>) => {
         setUser(event.currentTarget.value);
+        ls.setMainUser(event.currentTarget.value);
     };
 
     const onChangeRepo = (data: string) => {
         setRepo(data);
+        ls.setRepo(data);
     };
 
     const onChangeContrib = (data: string) => {

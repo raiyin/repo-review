@@ -3,7 +3,7 @@ let mainUserKey = 'mainUser';
 let repoNameKey = 'repoName';
 let reviewerKey = 'reviewer';
 
-export function addUserToBlackList(localStorage: Storage, login: string, avatar_url: string) {
+export function addUserToBlackList(login: string, avatar_url: string) {
 
     let blackListString = localStorage.getItem(blackListKey);
     if (blackListString !== null) {
@@ -44,8 +44,8 @@ export function getMainUser() {
     return localStorage.getItem(mainUserKey);
 }
 
-export function setMainUser(login: string, avatar_url: string) {
-    localStorage.setItem(mainUserKey, JSON.stringify({ 'login': login, 'avatar_url': avatar_url }));
+export function setMainUser(login: string) {
+    localStorage.setItem(mainUserKey, login);
 }
 
 export function unsetMainUser() {
@@ -64,8 +64,10 @@ export function unsetRepo() {
     localStorage.removeItem(repoNameKey);
 }
 
-export function getReviewer() {
-    return localStorage.getItem(reviewerKey);
+export function getReviewer(): { login: string, avatar_url: string; } | null {
+    let temp = localStorage.getItem(reviewerKey);
+    if (temp !== null) { return JSON.parse(temp); }
+    else return null;
 }
 
 export function setReviewer(login: string, avatar_url: string) {
