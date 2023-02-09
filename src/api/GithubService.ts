@@ -36,7 +36,6 @@ export const getRepoContributors = async (user: string, repo: string) => {
     let url = 'https://api.github.com/repos/{user}/{repo}/contributors';
     url = url.replace('{user}', user);
     url = url.replace('{repo}', repo);
-    console.log(url);
     const response = await fetch(url, {
         method: 'GET',
         headers: {
@@ -48,7 +47,6 @@ export const getRepoContributors = async (user: string, repo: string) => {
     if (response.ok) {
         let contribsArray: Array<GitHubContribObject> = await response.json();
         let contribsNames: Array<GitHubContribObject> = contribsArray.map(item => ({ login: item.login, avatar_url: item.avatar_url }));
-        console.log('contribsArray' + contribsNames);
         return contribsNames;
     }
 

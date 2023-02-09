@@ -1,18 +1,17 @@
 import { useState } from 'react';
 
-export const useFetching = (callback: Function): [Function, string] => {
-    const [error, setError] = useState('');
+export const useFetching = (callback: Function): [Function] => {
 
     const fetching = async (...args: unknown[]) => {
         try {
             await callback(...args);
         }
         catch (e: any) {
-            setError(e.message);
+            console.log(e.message);
         }
         finally {
         }
     };
 
-    return [fetching, error];
+    return [fetching];
 };

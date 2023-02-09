@@ -9,7 +9,6 @@ import { Button, Input, AutoComplete } from 'antd';
 import UserList from '../UserList/UserList';
 import UserListItem from '../UserListItem/UserListItem';
 import { getRandomInt } from '../../api/utils';
-import debounce from 'lodash/debounce';
 import * as ls from '../../api/localstorageService';
 
 export default function FormSearching() {
@@ -32,7 +31,7 @@ export default function FormSearching() {
     library.add(faGear);
     library.add(faUsers);
 
-    const [fetchRepos, reposError] = useFetching(async (user: string) => {
+    const [fetchRepos] = useFetching(async (user: string) => {
         let response: string[];
         if (!user)
             response = [];
@@ -43,7 +42,7 @@ export default function FormSearching() {
         setUserRepos(responseObj);
     });
 
-    const [fetchContribs, reviewrsError] = useFetching(async (user: string, repo: string) => {
+    const [fetchContribs] = useFetching(async (user: string, repo: string) => {
         let response: GitHubContribObject[];
         if (!repo || !user)
             response = [];
@@ -86,12 +85,23 @@ export default function FormSearching() {
     }, []);
 
     useEffect(() => {
-        fetchRepos(user);
+        setRepoContribs([]);
+
+        const getReposData = setTimeout(() => {
+            fetchRepos(user);
+        }, 500);
+
+        return () => clearTimeout(getReposData);
+
     }, [user]);
 
     useEffect(() => {
         if (userRepos.filter((item: { value: string; }) => item.value === repo)) {
-            fetchContribs(user, repo);
+            const getContribsData = setTimeout(() => {
+                fetchContribs(user, repo);
+            }, 500);
+
+            return () => clearTimeout(getContribsData);
         }
     }, [repo]);
 
@@ -109,7 +119,7 @@ export default function FormSearching() {
 
     const AddUserToBlackList = () => {
         // Защищаем от повторного добавления в чёрный список.
-        if (blItems.filter(item => item.login == contrib).length === 0) {
+        if (blItems.filter(item => item.login === contrib).length === 0) {
             const newBlItem = {
                 login: contrib,
                 avatar_url: repoContribs.filter(item => item.login === contrib)[0].avatar_url
@@ -127,15 +137,13 @@ export default function FormSearching() {
     const AddReviewer = (e: React.MouseEvent) => {
         // Генерируем ревьюера.
         let candidateIndex = getRandomInt(repoContribs.length);
-        let candidateLogin = repoContribs[candidateIndex].login;
-        while (blItems.filter(item => item.login === candidateLogin).length !== 0) {
+        while (blItems.filter(item => item.login === repoContribs[candidateIndex].login).length !== 0) {
             candidateIndex = getRandomInt(repoContribs.length);
-            candidateLogin = repoContribs[candidateIndex].login;
         }
-
+        let candidate = repoContribs[candidateIndex];
         const newReviewer = {
-            login: candidateLogin,
-            avatar_url: repoContribs.filter(item => item.login === candidateLogin)[0].avatar_url
+            login: candidate.login,
+            avatar_url: candidate.avatar_url
         };
         setReviewer(newReviewer);
         ls.setReviewer(newReviewer.login, newReviewer.avatar_url);
@@ -182,7 +190,7 @@ export default function FormSearching() {
                         value={repo}
                         options={repoOptions}
                         onSearch={onSearchRepos}
-                        onChange={debounce(onChangeRepo, 300)}
+                        onChange={onChangeRepo}
                         placeholder='Название репозитория' />
 
                     <AutoComplete
