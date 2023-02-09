@@ -69,17 +69,8 @@ export default function FormSearching() {
     useEffect(() => {
         let localBlackList = ls.getAllUsersFromBlackList();
         if (localBlackList !== null) {
-            for (let index = 0; index < localBlackList.length; index++) {
-
-                console.log(index);
-                if (blItems.filter(item => item.login == localBlackList[index].login).length === 0) {
-                    const newBlItem = {
-                        login: localBlackList[index].login,
-                        avatar_url: localBlackList[index].avatar_url
-                    };
-                    setBlItems(blItems => [...blItems, newBlItem]);
-                }
-            }
+            let tempArray = localBlackList.map(item => ({ 'login': item.login, 'avatar_url': item.avatar_url }));
+            setBlItems(tempArray);
         }
     }, []);
 
@@ -150,7 +141,7 @@ export default function FormSearching() {
         ls.setReviewer(newReviewer.login, newReviewer.avatar_url);
     };
 
-    const removeReviewer = (reviewer: GitHubContribObject) => {
+    const removeReviewer = () => {
         setReviewer(null);
         ls.removeReviewer();
     };
