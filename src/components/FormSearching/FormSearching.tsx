@@ -7,6 +7,7 @@ import { faGear, faUsers } from '@fortawesome/free-solid-svg-icons';
 import { GitHubContribObject, getUserRepos, getRepoContributors } from '../../api/githubService';
 import { Button, Input, AutoComplete } from 'antd';
 import UserList from '../UserList/UserList';
+import UserListItem from '../UserListItem/UserListItem';
 import { getRandomInt } from '../../api/utils';
 import debounce from 'lodash/debounce';
 import * as ls from '../../api/localstorageService';
@@ -26,9 +27,7 @@ export default function FormSearching() {
     const [blContribsOptions, setBlContribsOptions] = useState<{ value: string; }[]>([]);
 
     const [blItems, setBlItems] = useState<Array<GitHubContribObject>>([]);
-    const [reviewers, setReviewers] = useState<Array<GitHubContribObject>>([]);
-
-    const [localStorage, setLocalStorage] = useState({});
+    const [reviewer, setReviewer] = useState<GitHubContribObject | null>(null);
 
     library.add(faGear);
     library.add(faUsers);
@@ -54,41 +53,44 @@ export default function FormSearching() {
     });
 
     useEffect(() => {
-        try {
-            setLocalStorage(window.localStorage);
+        let localUser = ls.getMainUser();
+        if (localUser !== null) {
+            setUser(localUser);
+        }
+    }, []);
 
-            let localUser = ls.getMainUser();
-            if (localUser !== null) {
-                setUser(localUser);
-            }
+    useEffect(() => {
+        let localRepo = ls.getRepo();
+        if (localRepo !== null) {
+            setRepo(localRepo);
+        }
+    }, []);
 
-            let localRepo = ls.getRepo();
-            if (localRepo !== null) {
-                setRepo(localRepo);
-            }
+    useEffect(() => {
+        let localBlackList = ls.getAllUsersFromBlackList();
+        if (localBlackList !== null) {
+            for (let index = 0; index < localBlackList.length; index++) {
 
-            let localBlackList = ls.getAllUsersFromBlackList();
-            if (localBlackList !== null) {
-                localBlackList.map(item => {
+                console.log(index);
+                if (blItems.filter(item => item.login == localBlackList[index].login).length === 0) {
                     const newBlItem = {
-                        login: item.login,
-                        avatar_url: item.avatar_url
+                        login: localBlackList[index].login,
+                        avatar_url: localBlackList[index].avatar_url
                     };
-                    createBlItem(newBlItem);
-                });
-            }
-
-
-            let localReviewer = ls.getReviewer();
-            if (localReviewer !== null) {
-                const newReviewer = {
-                    login: localReviewer.login,
-                    avatar_url: localReviewer.avatar_url
-                };
-                createReviewer(newReviewer);
+                    setBlItems(blItems => [...blItems, newBlItem]);
+                }
             }
         }
-        catch (e) {
+    }, []);
+
+    useEffect(() => {
+        let localReviewer = ls.getReviewer();
+        if (localReviewer !== null) {
+            const newReviewer = {
+                login: localReviewer.login,
+                avatar_url: localReviewer.avatar_url
+            };
+            setReviewer(newReviewer);
         }
     }, []);
 
@@ -114,53 +116,43 @@ export default function FormSearching() {
         );
     };
 
-    const AddUserToBlackList = (e: React.MouseEvent) => {
+    const AddUserToBlackList = () => {
         // Защищаем от повторного добавления в чёрный список.
         if (blItems.filter(item => item.login == contrib).length === 0) {
             const newBlItem = {
                 login: contrib,
                 avatar_url: repoContribs.filter(item => item.login === contrib)[0].avatar_url
             };
-            createBlItem(newBlItem);
+            setBlItems([...blItems, newBlItem]);
             ls.addUserToBlackList(newBlItem.login, newBlItem.avatar_url);
         }
     };
 
     const removeBlItem = (blItem: GitHubContribObject) => {
         setBlItems(blItems.filter(item => item.login !== blItem.login));
-    };
-
-    const createBlItem = (newBlItem: GitHubContribObject) => {
-        setBlItems([...blItems, newBlItem]);
+        ls.removeUserFromBlackList(blItem.login);
     };
 
     const AddReviewer = (e: React.MouseEvent) => {
-        // Защищаем от вставки нескольких ревьюеров.
-        if (reviewers.length === 0) {
-
-            // Генерируем ревьюера.
-            let candidateIndex = getRandomInt(repoContribs.length);
-            let candidateLogin = repoContribs[candidateIndex].login;
-            while (blItems.filter(item => item.login === candidateLogin).length !== 0) {
-                candidateIndex = getRandomInt(repoContribs.length);
-                candidateLogin = repoContribs[candidateIndex].login;
-            }
-
-            const newReviewer = {
-                login: candidateLogin,
-                avatar_url: repoContribs.filter(item => item.login === candidateLogin)[0].avatar_url
-            };
-            createReviewer(newReviewer);
-            ls.setReviewer(newReviewer.login, newReviewer.avatar_url);
+        // Генерируем ревьюера.
+        let candidateIndex = getRandomInt(repoContribs.length);
+        let candidateLogin = repoContribs[candidateIndex].login;
+        while (blItems.filter(item => item.login === candidateLogin).length !== 0) {
+            candidateIndex = getRandomInt(repoContribs.length);
+            candidateLogin = repoContribs[candidateIndex].login;
         }
-    };
 
-    const createReviewer = (newReviewer: GitHubContribObject) => {
-        setReviewers([...reviewers, newReviewer]);
+        const newReviewer = {
+            login: candidateLogin,
+            avatar_url: repoContribs.filter(item => item.login === candidateLogin)[0].avatar_url
+        };
+        setReviewer(newReviewer);
+        ls.setReviewer(newReviewer.login, newReviewer.avatar_url);
     };
 
     const removeReviewer = (reviewer: GitHubContribObject) => {
-        setReviewers(reviewers.filter(item => item.login !== reviewer.login));
+        setReviewer(null);
+        ls.removeReviewer();
     };
 
     const changeLogin = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -168,29 +160,24 @@ export default function FormSearching() {
         ls.setMainUser(event.currentTarget.value);
     };
 
-    const onChangeRepo = (data: string) => {
-        setRepo(data);
-        ls.setRepo(data);
+    const onChangeRepo = (repo: string) => {
+        setRepo(repo);
+        ls.setRepo(repo);
     };
 
-    const onChangeContrib = (data: string) => {
-        setContrib(data);
+    const onChangeContrib = (contributor: string) => {
+        setContrib(contributor);
     };
-
-    function changeVisibility() {
-        setBtnText(showOrHideSettings ? 'Показать настройки' : 'Скрыть настройки');
-    }
 
     const changeVision = () => {
         setShowOrHideSettings(!showOrHideSettings);
-        changeVisibility();
+        setBtnText(showOrHideSettings ? 'Показать настройки' : 'Скрыть настройки');
     };
 
     return (
         <div className={cl.formsearching}>
             <MyButton onClick={changeVision} text={btnText} icon_type='gear' />
 
-            <datalist id="countriesList"></datalist>
             {showOrHideSettings ? (
                 <>
                     <Input
@@ -199,12 +186,14 @@ export default function FormSearching() {
                         type='text'
                         name='login'
                         placeholder='Логин' />
+
                     <AutoComplete
                         value={repo}
                         options={repoOptions}
                         onSearch={onSearchRepos}
                         onChange={debounce(onChangeRepo, 300)}
                         placeholder='Название репозитория' />
+
                     <AutoComplete
                         value={contrib}
                         options={blContribsOptions}
@@ -212,11 +201,15 @@ export default function FormSearching() {
                         onChange={onChangeContrib}
                         placeholder='В чёрный список' />
 
-
                     <Button onClick={AddUserToBlackList}>Добавить в чёрный список</Button>
                     <UserList blItems={blItems} remove={removeBlItem}></UserList>
                     <Button onClick={AddReviewer} >Генерировать ревьюера</Button>
-                    <UserList blItems={reviewers} remove={removeReviewer}></UserList>
+
+                    {reviewer !== null ?
+                        (<UserListItem key={reviewer.login} remove={removeReviewer} blItem={reviewer} />)
+                        :
+                        (<></>)
+                    }
                 </>
             ) : (
                 <></>

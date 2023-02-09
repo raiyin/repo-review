@@ -3,6 +3,9 @@ let mainUserKey = 'mainUser';
 let repoNameKey = 'repoName';
 let reviewerKey = 'reviewer';
 
+let localStorage = window.localStorage;
+// add try/catch
+
 export function addUserToBlackList(login: string, avatar_url: string) {
 
     let blackListString = localStorage.getItem(blackListKey);
@@ -74,6 +77,6 @@ export function setReviewer(login: string, avatar_url: string) {
     localStorage.setItem(reviewerKey, JSON.stringify({ 'login': login, 'avatar_url': avatar_url }));
 }
 
-export function unsetReviewer(max: number) {
+export function removeReviewer() {
     localStorage.removeItem(reviewerKey);
 }
