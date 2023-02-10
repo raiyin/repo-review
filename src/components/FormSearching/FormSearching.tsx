@@ -119,7 +119,6 @@ export default function FormSearching() {
         }
     }, [repo]);
 
-
     useEffect(() => {
         if (!reviewerAddPossible) {
             openNotification('top');
@@ -139,9 +138,10 @@ export default function FormSearching() {
         );
     };
 
-    const AddUserToBlackList = () => {
+    const onAddUserToBlackListHandler = () => {
         // Защищаем от повторного добавления в чёрный список.
-        if (blItems.filter(item => item.login === contrib).length === 0) {
+        if (blItems.filter(item => item.login === contrib).length === 0 &&
+            user !== contrib) {
             const newBlItem = {
                 login: contrib,
                 avatar_url: repoContribs.filter(item => item.login === contrib)[0].avatar_url
@@ -156,7 +156,7 @@ export default function FormSearching() {
         ls.removeUserFromBlackList(blItem.login);
     };
 
-    const AddReviewer = (e: React.MouseEvent) => {
+    const onAddReviewerHandler = (e: React.MouseEvent) => {
         // Проверка возможности найти ревьюера.
         // Проверяем, чтобы список контрибьютеров с логинами, отличными от текущего пользователя
         // и которых нет в чёрном списке был не пустым.
@@ -168,7 +168,6 @@ export default function FormSearching() {
         }
 
         // Генерируем ревьюера.
-
         let timerId = setInterval(() => {
             let candidateIndex = getRandomInt(repoContribs.length);
             while (blItems.filter(item => item.login === repoContribs[candidateIndex].login).length !== 0) {
@@ -192,21 +191,21 @@ export default function FormSearching() {
         ls.removeReviewer();
     };
 
-    const changeLogin = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const onChangeUserHandler = (event: React.ChangeEvent<HTMLInputElement>) => {
         setUser(event.currentTarget.value);
         ls.setMainUser(event.currentTarget.value);
     };
 
-    const onChangeRepo = (repo: string) => {
+    const onChangeRepoHandler = (repo: string) => {
         setRepo(repo);
         ls.setRepo(repo);
     };
 
-    const onChangeContrib = (contributor: string) => {
+    const onChangeContribHandler = (contributor: string) => {
         setContrib(contributor);
     };
 
-    const changeVision = () => {
+    const onChangeVisionHandler = () => {
         setShowOrHideSettings(!showOrHideSettings);
         setBtnText(showOrHideSettings ? 'Показать настройки' : 'Скрыть настройки');
     };
@@ -215,13 +214,13 @@ export default function FormSearching() {
         <div className={cl.formsearching}>
 
             {contextHolder}
-            <MyButton onClick={changeVision} text={btnText} icon_type='gear' />
+            <MyButton onClick={onChangeVisionHandler} text={btnText} icon_type='gear' />
 
             {showOrHideSettings ? (
                 <>
                     <Input
                         value={user}
-                        onChange={changeLogin}
+                        onChange={onChangeUserHandler}
                         type='text'
                         name='login'
                         placeholder='Логин' />
@@ -230,19 +229,19 @@ export default function FormSearching() {
                         value={repo}
                         options={repoOptions}
                         onSearch={onSearchRepos}
-                        onChange={onChangeRepo}
+                        onChange={onChangeRepoHandler}
                         placeholder='Название репозитория' />
 
                     <AutoComplete
                         value={contrib}
                         options={blContribsOptions}
                         onSearch={onSearchContribs}
-                        onChange={onChangeContrib}
+                        onChange={onChangeContribHandler}
                         placeholder='В чёрный список' />
 
-                    <Button onClick={AddUserToBlackList}>Добавить в чёрный список</Button>
+                    <Button onClick={onAddUserToBlackListHandler}>Добавить в чёрный список</Button>
                     <UserList blItems={blItems} remove={removeBlItem}></UserList>
-                    <Button onClick={AddReviewer} >Генерировать ревьюера</Button>
+                    <Button onClick={onAddReviewerHandler} >Генерировать ревьюера</Button>
 
                     {reviewer !== null ?
                         (<UserListItem key={reviewer.login} remove={removeReviewer} blItem={reviewer} />)
