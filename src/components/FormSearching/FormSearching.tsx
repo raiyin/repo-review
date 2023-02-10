@@ -168,17 +168,23 @@ export default function FormSearching() {
         }
 
         // Генерируем ревьюера.
-        let candidateIndex = getRandomInt(repoContribs.length);
-        while (blItems.filter(item => item.login === repoContribs[candidateIndex].login).length !== 0) {
-            candidateIndex = getRandomInt(repoContribs.length);
-        }
-        let candidate = repoContribs[candidateIndex];
-        const newReviewer = {
-            login: candidate.login,
-            avatar_url: candidate.avatar_url
-        };
-        setReviewer(newReviewer);
-        ls.setReviewer(newReviewer.login, newReviewer.avatar_url);
+
+        let timerId = setInterval(() => {
+            let candidateIndex = getRandomInt(repoContribs.length);
+            while (blItems.filter(item => item.login === repoContribs[candidateIndex].login).length !== 0) {
+                candidateIndex = getRandomInt(repoContribs.length);
+            }
+            let candidate = repoContribs[candidateIndex];
+            const newReviewer = {
+                login: candidate.login,
+                avatar_url: candidate.avatar_url
+            };
+            setReviewer(newReviewer);
+            ls.setReviewer(newReviewer.login, newReviewer.avatar_url);
+
+        }, 1000);
+
+        setTimeout(() => { clearInterval(timerId); }, 5000);
     };
 
     const removeReviewer = () => {
