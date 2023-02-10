@@ -5,7 +5,8 @@ import cl from './FormSearching.module.css';
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { faGear, faUsers } from '@fortawesome/free-solid-svg-icons';
 import { GitHubContribObject, getUserRepos, getRepoContributors } from '../../api/githubService';
-import { Button, Input, AutoComplete } from 'antd';
+import { Button, Input, AutoComplete, notification } from 'antd';
+import type { NotificationPlacement } from 'antd/es/notification/interface';
 import UserList from '../UserList/UserList';
 import UserListItem from '../UserListItem/UserListItem';
 import { getRandomInt } from '../../api/utils';
@@ -27,6 +28,19 @@ export default function FormSearching() {
 
     const [blItems, setBlItems] = useState<Array<GitHubContribObject>>([]);
     const [reviewer, setReviewer] = useState<GitHubContribObject | null>(null);
+
+    const [reviewerAddPossible, setReviewerPossible] = useState(true);
+
+    const [api, contextHolder] = notification.useNotification();
+
+    const openNotification = (placement: NotificationPlacement) => {
+        api.info({
+            message: `Добавление ревьюера невозможно`,
+            description:
+                'При выбранных параметрах добавление ревьюера невозможно. Возможно, что у репозитория один контрибьютор или почти все они в чёрном списке.',
+            placement,
+        });
+    };
 
     library.add(faGear);
     library.add(faUsers);
@@ -105,6 +119,14 @@ export default function FormSearching() {
         }
     }, [repo]);
 
+
+    useEffect(() => {
+        if (!reviewerAddPossible) {
+            openNotification('top');
+            setReviewerPossible(true);
+        }
+    }, [reviewerAddPossible]);
+
     const onSearchRepos = (searchText: string) => {
         setRepoOptions(
             !searchText ? [] : userRepos.filter((item: { value: string; }) => item.value.includes(searchText)),
@@ -135,6 +157,16 @@ export default function FormSearching() {
     };
 
     const AddReviewer = (e: React.MouseEvent) => {
+        // Проверка возможности найти ревьюера.
+        // Проверяем, чтобы список контрибьютеров с логинами, отличными от текущего пользователя
+        // и которых нет в чёрном списке был не пустым.
+        if (repoContribs.filter(
+            item => (item.login != user && blItems.filter(blItem => blItem.login === item.login).length === 0))
+            .length === 0) {
+            setReviewerPossible(false);
+            return;
+        }
+
         // Генерируем ревьюера.
         let candidateIndex = getRandomInt(repoContribs.length);
         while (blItems.filter(item => item.login === repoContribs[candidateIndex].login).length !== 0) {
@@ -175,6 +207,8 @@ export default function FormSearching() {
 
     return (
         <div className={cl.formsearching}>
+
+            {contextHolder}
             <MyButton onClick={changeVision} text={btnText} icon_type='gear' />
 
             {showOrHideSettings ? (
