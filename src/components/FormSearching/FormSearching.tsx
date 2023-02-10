@@ -29,15 +29,15 @@ export default function FormSearching() {
     const [blItems, setBlItems] = useState<Array<GitHubContribObject>>([]);
     const [reviewer, setReviewer] = useState<GitHubContribObject | null>(null);
 
-    const [reviewerAddPossible, setReviewerPossible] = useState(true);
+    const [reviewerAddPossible, setReviewerAddPossible] = useState(true);
+    const [contribAddPossible, setContribAddPossible] = useState(true);
 
     const [api, contextHolder] = notification.useNotification();
 
-    const openNotification = (placement: NotificationPlacement) => {
+    const openNotification = (placement: NotificationPlacement, title: string, message: string) => {
         api.info({
-            message: `Добавление ревьюера невозможно`,
-            description:
-                'При выбранных параметрах добавление ревьюера невозможно. Возможно, что у репозитория один контрибьютор или почти все они в чёрном списке.',
+            message: title,
+            description: message,
             placement,
         });
     };
@@ -121,10 +121,18 @@ export default function FormSearching() {
 
     useEffect(() => {
         if (!reviewerAddPossible) {
-            openNotification('top');
-            setReviewerPossible(true);
+            openNotification('top',
+                'Добавление ревьюера невозможно',
+                'При выбранных параметрах добавление ревьюера невозможно. Возможно, что у репозитория один контрибьютор или почти все они в чёрном списке.');
+            setReviewerAddPossible(true);
         }
-    }, [reviewerAddPossible]);
+        else if (!contribAddPossible) {
+            openNotification('top',
+                'Добавление в чёрный список невозможно',
+                'Запрещено добавлять текущего пользователя в чёрный список.');
+            setContribAddPossible(true);
+        }
+    }, [reviewerAddPossible, contribAddPossible]);
 
     const onSearchRepos = (searchText: string) => {
         setRepoOptions(
@@ -139,9 +147,13 @@ export default function FormSearching() {
     };
 
     const onAddUserToBlackListHandler = () => {
+        if (user === contrib) {
+            setContribAddPossible(false);
+            return;
+        }
+
         // Защищаем от повторного добавления в чёрный список.
-        if (blItems.filter(item => item.login === contrib).length === 0 &&
-            user !== contrib) {
+        if (blItems.filter(item => item.login === contrib).length === 0) {
             const newBlItem = {
                 login: contrib,
                 avatar_url: repoContribs.filter(item => item.login === contrib)[0].avatar_url
@@ -163,7 +175,7 @@ export default function FormSearching() {
         if (repoContribs.filter(
             item => (item.login != user && blItems.filter(blItem => blItem.login === item.login).length === 0))
             .length === 0) {
-            setReviewerPossible(false);
+            setReviewerAddPossible(false);
             return;
         }
 
