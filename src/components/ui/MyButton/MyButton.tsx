@@ -1,10 +1,7 @@
 import React from 'react';
-import ReactNode from 'react-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { solid } from '@fortawesome/fontawesome-svg-core/import.macro';
 import cl from './MyButton.module.css';
-import { IconName } from '@fortawesome/free-solid-svg-icons';
-import { IconDefinition, IconProp } from '@fortawesome/fontawesome-svg-core';
+import { IconProp } from '@fortawesome/fontawesome-svg-core';
 
 interface ButtonProps {
     text: string;

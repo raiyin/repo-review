@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import MyButton from '../ui/MyButton/MyButton';
 import cl from './UserListItem.module.css';
 import { library } from "@fortawesome/fontawesome-svg-core";
