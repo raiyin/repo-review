@@ -12,6 +12,14 @@ import UserListItem from '../UserListItem/UserListItem';
 import { getRandomInt } from '../../api/utils';
 import * as ls from '../../api/localstorageService';
 
+enum IsPossibleAddToBL {
+    Yes = 1,
+    NoCurrentUser,
+    NoRepeat,
+    NoNoexistUser,
+    NoEmptyString
+}
+
 export default function FormSearching() {
     const [btnText, setBtnText] = useState('Показать настройки');
     const [showOrHideSettings, setShowOrHideSettings] = useState(false);
@@ -30,7 +38,7 @@ export default function FormSearching() {
     const [reviewer, setReviewer] = useState<GitHubContribObject | null>(null);
 
     const [reviewerAddPossible, setReviewerAddPossible] = useState(true);
-    const [contribAddPossible, setContribAddPossible] = useState(true);
+    const [contribAddPossible, setContribAddPossible] = useState<IsPossibleAddToBL>(IsPossibleAddToBL.Yes);
 
     const [api, contextHolder] = notification.useNotification();
 
@@ -126,11 +134,23 @@ export default function FormSearching() {
                 'При выбранных параметрах добавление ревьюера невозможно. Возможно, что у репозитория один контрибьютор или почти все они в чёрном списке.');
             setReviewerAddPossible(true);
         }
-        else if (!contribAddPossible) {
+        else if (contribAddPossible === IsPossibleAddToBL.NoCurrentUser) {
             openNotification('top',
                 'Добавление в чёрный список невозможно',
                 'Запрещено добавлять текущего пользователя в чёрный список.');
-            setContribAddPossible(true);
+            setContribAddPossible(IsPossibleAddToBL.Yes);
+        }
+        else if (contribAddPossible === IsPossibleAddToBL.NoNoexistUser) {
+            openNotification('top',
+                'Добавление в чёрный список невозможно',
+                'Запрещено добавлять несуществующего пользователя в чёрный список.');
+            setContribAddPossible(IsPossibleAddToBL.Yes);
+        }
+        else if (contribAddPossible === IsPossibleAddToBL.NoRepeat) {
+            openNotification('top',
+                'Добавление в чёрный список невозможно',
+                'Запрещено добавлять пользователя в чёрный список повторно.');
+            setContribAddPossible(IsPossibleAddToBL.Yes);
         }
     }, [reviewerAddPossible, contribAddPossible]);
 
@@ -147,20 +167,30 @@ export default function FormSearching() {
     };
 
     const onAddUserToBlackListHandler = () => {
+        // Защищаем от добавления в чёрный список текущего пользователя.
         if (user === contrib) {
-            setContribAddPossible(false);
+            setContribAddPossible(IsPossibleAddToBL.NoCurrentUser);
+            return;
+        }
+
+        // Защищаем от добавления в чёрный список несуществующего пользователя.
+        if (repoContribs.filter(item => item.login === contrib).length === 0) {
+            setContribAddPossible(IsPossibleAddToBL.NoNoexistUser);
             return;
         }
 
         // Защищаем от повторного добавления в чёрный список.
-        if (blItems.filter(item => item.login === contrib).length === 0) {
-            const newBlItem = {
-                login: contrib,
-                avatar_url: repoContribs.filter(item => item.login === contrib)[0].avatar_url
-            };
-            setBlItems([...blItems, newBlItem]);
-            ls.addUserToBlackList(newBlItem.login, newBlItem.avatar_url);
+        if (blItems.filter(item => item.login === contrib).length !== 0) {
+            setContribAddPossible(IsPossibleAddToBL.NoRepeat);
+            return;
         }
+
+        const newBlItem = {
+            login: contrib,
+            avatar_url: repoContribs.filter(item => item.login === contrib)[0].avatar_url
+        };
+        setBlItems([...blItems, newBlItem]);
+        ls.addUserToBlackList(newBlItem.login, newBlItem.avatar_url);
     };
 
     const removeBlItem = (blItem: GitHubContribObject) => {
@@ -251,7 +281,7 @@ export default function FormSearching() {
                         onChange={onChangeContribHandler}
                         placeholder='В чёрный список' />
 
-                    <Button onClick={onAddUserToBlackListHandler}>Добавить в чёрный список</Button>
+                    <Button onClick={onAddUserToBlackListHandler} disabled={contrib.length === 0}>Добавить в чёрный список</Button>
                     <UserList blItems={blItems} remove={removeBlItem}></UserList>
                     <Button onClick={onAddReviewerHandler} >Генерировать ревьюера</Button>
 
