@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import MyButton from '../ui/MyButton/MyButton';
-import { useFetching } from '../../hooks/useFetching';
-import cl from './FormSearching.module.css';
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { faGear, faUsers } from '@fortawesome/free-solid-svg-icons';
-import { GitHubContribObject, getUserRepos, getRepoContributors } from '../../api/githubService';
 import { Button, Input, AutoComplete, notification } from 'antd';
 import type { NotificationPlacement } from 'antd/es/notification/interface';
+import MyButton from '../ui/MyButton/MyButton';
 import UserList from '../UserList/UserList';
 import UserListItem from '../UserListItem/UserListItem';
 import { getRandomInt } from '../../api/utils';
 import * as ls from '../../api/localstorageService';
+import { GitHubContribObject, getUserRepos, getRepoContributors } from '../../api/githubService';
+import { useFetching } from '../../hooks/useFetching';
+import cl from './FormSearching.module.css';
 
 enum IsPossibleAddToBL {
     Yes = 1,
@@ -279,7 +279,7 @@ export default function FormSearching() {
                         options={blContribsOptions}
                         onSearch={onSearchContribs}
                         onChange={onChangeContribHandler}
-                        placeholder='В чёрный список' />
+                        placeholder='Добавить в чёрный список' />
 
                     <Button onClick={onAddUserToBlackListHandler} disabled={contrib.length === 0}>Добавить в чёрный список</Button>
                     <UserList blItems={blItems} remove={removeBlItem}></UserList>
