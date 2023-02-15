@@ -1,5 +1,3 @@
-import { useState } from 'react';
-
 export const useFetching = (callback: Function): [Function] => {
 
     const fetching = async (...args: unknown[]) => {

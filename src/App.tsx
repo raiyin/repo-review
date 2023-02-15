@@ -1,4 +1,4 @@
-import React from 'react';
+import { useDispatch } from "react-redux";
 import './styles/App.css';
 import FormSearching from './components/FormSearching/FormSearching';
 

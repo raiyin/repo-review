@@ -12,6 +12,12 @@ import { GitHubContribObject, getUserRepos, getRepoContributors } from '../../ap
 import { useFetching } from '../../hooks/useFetching';
 import cl from './FormSearching.module.css';
 
+
+import { useDispatch, useSelector } from "react-redux";
+import { setUserAction } from '../../store/userReducer';
+import fetchRepos, { FetchReposFromGithub } from '../../asyncapi/asyncghService';
+import { IRootState } from '../../store';
+
 enum IsPossibleAddToBL {
     Yes = 1,
     NoCurrentUser,
@@ -21,13 +27,17 @@ enum IsPossibleAddToBL {
 }
 
 export default function FormSearching() {
+
+    const dispatch = useDispatch() as (fn: FetchReposFromGithub) => Promise<void>;
     const [btnText, setBtnText] = useState('Показать настройки');
     const [showOrHideSettings, setShowOrHideSettings] = useState(false);
 
-    const [user, setUser] = useState('');
+    //const [user, setUser] = useState('');
+    const user = useSelector((state: IRootState) => state.user);
 
     const [repo, setRepo] = useState('');
-    const [userRepos, setUserRepos] = useState<{ value: string; }[]>([]);
+    //const [userRepos, setUserRepos] = useState<{ value: string; }[]>([]);
+    const userRepos = useSelector((state: IRootState) => state.repos);
     const [repoOptions, setRepoOptions] = useState<{ value: string; }[]>([]);
 
     const [contrib, setContrib] = useState('');
@@ -53,16 +63,16 @@ export default function FormSearching() {
     library.add(faGear);
     library.add(faUsers);
 
-    const [fetchRepos] = useFetching(async (user: string) => {
-        let response: string[];
-        if (!user)
-            response = [];
-        else
-            response = await getUserRepos(user);
+    // const [fetchRepos] = useFetching(async (user: string) => {
+    //     let response: string[];
+    //     if (!user)
+    //         response = [];
+    //     else
+    //         response = await getUserRepos(user);
 
-        let responseObj: Array<{ value: string; }> = response.map(item => ({ value: item }));
-        setUserRepos(responseObj);
-    });
+    //     let responseObj: Array<{ value: string; }> = response.map(item => ({ value: item }));
+    //     setUserRepos(responseObj);
+    // });
 
     const [fetchContribs] = useFetching(async (user: string, repo: string) => {
         let response: GitHubContribObject[];
@@ -75,9 +85,9 @@ export default function FormSearching() {
 
     useEffect(() => {
         let localUser = ls.getMainUser();
-        if (localUser !== null) {
-            setUser(localUser);
-        }
+        // if (localUser !== null) {
+        //     setUser(localUser);
+        // }
     }, []);
 
     useEffect(() => {
@@ -106,19 +116,25 @@ export default function FormSearching() {
         }
     }, []);
 
+    // useEffect(() => {
+    //     setRepoContribs([]);
+
+    //     const getReposData = setTimeout(() => {
+    //         fetchRepos(user);
+    //     }, 500);
+
+    //     return () => clearTimeout(getReposData);
+
+    // }, [user]);
+
     useEffect(() => {
         setRepoContribs([]);
-
-        const getReposData = setTimeout(() => {
-            fetchRepos(user);
-        }, 500);
-
-        return () => clearTimeout(getReposData);
+        //dispatch(getRepos(user));
 
     }, [user]);
 
     useEffect(() => {
-        if (userRepos.filter((item: { value: string; }) => item.value === repo)) {
+        if (userRepos.filter((item: string) => item === repo)) {
             const getContribsData = setTimeout(() => {
                 fetchContribs(user, repo);
             }, 500);
@@ -155,9 +171,9 @@ export default function FormSearching() {
     }, [reviewerAddPossible, contribAddPossible]);
 
     const onSearchRepos = (searchText: string) => {
-        setRepoOptions(
-            !searchText ? [] : userRepos.filter((item: { value: string; }) => item.value.includes(searchText)),
-        );
+        // setRepoOptions(
+        //     !searchText ? [] : userRepos.filter(item => item.includes(searchText)),
+        // );
     };
 
     const onSearchContribs = (searchText: string) => {
@@ -168,7 +184,7 @@ export default function FormSearching() {
 
     const onAddUserToBlackListHandler = () => {
         // Защищаем от добавления в чёрный список текущего пользователя.
-        if (user === contrib) {
+        if (user.user_login === contrib) {
             setContribAddPossible(IsPossibleAddToBL.NoCurrentUser);
             return;
         }
@@ -203,7 +219,7 @@ export default function FormSearching() {
         // Проверяем, чтобы список контрибьютеров с логинами, отличными от текущего пользователя
         // и которых нет в чёрном списке был не пустым.
         if (repoContribs.filter(
-            item => (item.login != user && blItems.filter(blItem => blItem.login === item.login).length === 0))
+            item => (item.login != user.user_login && blItems.filter(blItem => blItem.login === item.login).length === 0))
             .length === 0) {
             setReviewerAddPossible(false);
             return;
@@ -234,7 +250,9 @@ export default function FormSearching() {
     };
 
     const onChangeUserHandler = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setUser(event.currentTarget.value);
+        //setUser(event.currentTarget.value);
+        //dispatch(setUserAction(event.currentTarget.value));
+        dispatch(fetchRepos(event.currentTarget.value));
         ls.setMainUser(event.currentTarget.value);
     };
 
@@ -261,7 +279,8 @@ export default function FormSearching() {
             {showOrHideSettings ? (
                 <>
                     <Input
-                        value={user}
+                        value={user.user_login}
+                        //onChange={onChangeUserHandler}
                         onChange={onChangeUserHandler}
                         type='text'
                         name='login'
