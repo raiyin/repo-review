@@ -1,20 +1,20 @@
-import { GitHubUser } from "../types";
-const SET_CONTRIBS = "SET_REPOS";
+import { ContribAction, ContribActionTypes, ContribState } from ''../../types / contrib';;
 
-const defaultState = {
-    contribs: Array<GitHubUser>()
+const initialState: ContribState = {
+    contribs: [],
+    loading: false,
+    error: null
 };
 
-export function contribsReducer(state = defaultState, action: { type: string, payload: Array<GitHubUser>; }) {
+export const contribReducer = (state = initialState, action: ContribAction): ContribState => {
     switch (action.type) {
-        case SET_CONTRIBS:
-            return {
-                ...state,
-                contribs: action.payload
-            };
+        case ContribActionTypes.FETCH_CONTRIBS:
+            return { loading: true, error: null, contribs: [] };
+        case ContribActionTypes.FETCH_CONTRIBS_SUCCESS:
+            return { loading: false, error: null, contribs: action.payload };
+        case ContribActionTypes.FETCH_CONTRIBS_ERROR:
+            return { loading: false, error: action.payload, contribs: [] };
         default:
             return state;
     }
-}
-
-export const setContribsAction = (payload: Array<GitHubUser>) => ({ type: SET_CONTRIBS, payload });
+};
