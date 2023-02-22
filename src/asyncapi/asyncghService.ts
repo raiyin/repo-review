@@ -1,5 +1,5 @@
 import { AnyAction, Dispatch } from "redux";
-import { setReposAction } from "../store/reposReducer";
+import { setReposAction } from "../store/reducers/reposReducer";
 import { RootState } from "../store";
 
 export type FetchReposFromGithub = (

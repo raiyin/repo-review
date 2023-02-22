@@ -1,4 +1,4 @@
-import { GitHubUser } from "./types";
+import { GitHubUser } from "../types";
 const SET_CONTRIBS = "SET_REPOS";
 
 const defaultState = {
