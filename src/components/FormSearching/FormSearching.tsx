@@ -14,7 +14,7 @@ import cl from './FormSearching.module.css';
 
 
 import { useDispatch, useSelector } from "react-redux";
-import { setUserAction } from '../../store/userReducer';
+import { setUserAction } from '../../store/reducers/userReducer';
 import fetchRepos, { FetchReposFromGithub } from '../../asyncapi/asyncghService';
 import { IRootState } from '../../store';
 
