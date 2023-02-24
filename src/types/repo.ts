@@ -1,7 +1,7 @@
 export interface RepoState {
     repos: any[];
-    loading: boolean;
-    error: null | string;
+    repos_loading: boolean;
+    repos_error: null | string;
 }
 
 export enum RepoActionTypes {

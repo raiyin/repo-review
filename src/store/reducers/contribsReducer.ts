@@ -1,19 +1,19 @@
-import { ContribAction, ContribActionTypes, ContribState } from ''../../types / contrib';;
+import { ContribAction, ContribActionTypes, ContribState } from '../../types/contrib';
 
 const initialState: ContribState = {
     contribs: [],
-    loading: false,
-    error: null
+    contribs_loading: false,
+    contribs_error: null
 };
 
 export const contribReducer = (state = initialState, action: ContribAction): ContribState => {
     switch (action.type) {
         case ContribActionTypes.FETCH_CONTRIBS:
-            return { loading: true, error: null, contribs: [] };
+            return { contribs_loading: true, contribs_error: null, contribs: [] };
         case ContribActionTypes.FETCH_CONTRIBS_SUCCESS:
-            return { loading: false, error: null, contribs: action.payload };
+            return { contribs_loading: false, contribs_error: null, contribs: action.payload };
         case ContribActionTypes.FETCH_CONTRIBS_ERROR:
-            return { loading: false, error: action.payload, contribs: [] };
+            return { contribs_loading: false, contribs_error: action.payload, contribs: [] };
         default:
             return state;
     }

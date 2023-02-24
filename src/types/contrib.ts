@@ -1,7 +1,7 @@
 export interface ContribState {
     contribs: any[];
-    loading: boolean;
-    error: null | string;
+    contribs_loading: boolean;
+    contribs_error: null | string;
 }
 
 export enum ContribActionTypes {

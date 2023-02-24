@@ -1,4 +1,5 @@
-import { GitHubUser } from "../types";
+import { GitHubUser } from "../../types";
+
 const SET_REVIEWER = "SET_REVIEWER";
 
 const defaultState = {

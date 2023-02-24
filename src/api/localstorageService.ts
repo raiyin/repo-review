@@ -21,7 +21,7 @@ export function addUserToBlackList(login: string, avatar_url: string) {
             localStorage.setItem(blackListKey, blackListString);
         }
     } catch (error) {
-        console.log(error);
+        console.log('addUserToBlackList ' + error);
     }
 }
 
@@ -36,7 +36,7 @@ export function removeUserFromBlackList(login: string) {
         }
     }
     catch (error) {
-        console.log(error);
+        console.log('removeUserFromBlackList ' + error);
     }
 }
 
@@ -48,7 +48,7 @@ export function getAllUsersFromBlackList() {
             blackList = JSON.parse(blackListString);
         }
     }
-    catch (error) { console.log(error); }
+    catch (error) { console.log('getAllUsersFromBlackList ' + error); }
     return blackList;
 }
 
@@ -56,7 +56,7 @@ export function getMainUser() {
     try {
         return localStorage.getItem(mainUserKey);
     } catch (error) {
-        console.log(error);
+        console.log('getMainUser ' + error);
         return '';
     }
 }
@@ -65,7 +65,7 @@ export function setMainUser(login: string) {
     try {
         localStorage.setItem(mainUserKey, login);
     } catch (error) {
-        console.log(error);
+        console.log('setMainUser ' + error);
     }
 }
 
@@ -74,7 +74,7 @@ export function unsetMainUser() {
         localStorage.removeItem(mainUserKey);
     }
     catch (error) {
-        console.log(error);
+        console.log('unsetMainUser ' + error);
     }
 }
 
@@ -82,7 +82,7 @@ export function getRepo() {
     try {
         return localStorage.getItem(repoNameKey);
     } catch (error) {
-        console.log(error);
+        console.log('getRepo ' + error);
         return '';
     }
 }
@@ -91,7 +91,7 @@ export function setRepo(repo: string) {
     try {
         localStorage.setItem(repoNameKey, repo);
     } catch (error) {
-        console.log(error);
+        console.log('setRepo ' + error);
     }
 }
 
@@ -99,7 +99,7 @@ export function unsetRepo() {
     try {
         localStorage.removeItem(repoNameKey);
     } catch (error) {
-        console.log(error);
+        console.log('unsetRepo ' + error);
     }
 }
 
@@ -109,7 +109,7 @@ export function getReviewer(): { login: string, avatar_url: string; } | null {
         if (temp !== null) { return JSON.parse(temp); }
         else return null;
     } catch (error) {
-        console.log(error);
+        console.log('getReviewer ' + error);
         return null;
     }
 }
@@ -118,7 +118,7 @@ export function setReviewer(login: string, avatar_url: string) {
     try {
         localStorage.setItem(reviewerKey, JSON.stringify({ 'login': login, 'avatar_url': avatar_url }));
     } catch (error) {
-        console.log(error);
+        console.log('setReviewer ' + error);
     }
 }
 
@@ -127,6 +127,6 @@ export function removeReviewer() {
         localStorage.removeItem(reviewerKey);
     }
     catch (error) {
-        console.log(error);
+        console.log('removeReviewer ' + error);
     }
 }

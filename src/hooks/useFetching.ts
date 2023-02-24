@@ -5,7 +5,7 @@ export const useFetching = (callback: Function): [Function] => {
             await callback(...args);
         }
         catch (e: any) {
-            console.log(e.message);
+            console.log('useFetching ' + e.message);
         }
         finally {
         }
