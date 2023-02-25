@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { faGear, faUsers } from '@fortawesome/free-solid-svg-icons';
 import { Button, Input, AutoComplete, notification } from 'antd';
@@ -9,7 +8,6 @@ import UserList from '../UserList/UserList';
 import UserListItem from '../UserListItem/UserListItem';
 import { getRandomInt } from '../../api/utils';
 import * as ls from '../../api/localstorageService';
-import { getUserRepos, getRepoContributors } from '../../api/githubService';
 import cl from './FormSearching.module.css';
 
 import { useTypedSelector } from '../../hooks/useTypedSelector';
@@ -19,17 +17,18 @@ import { GitHubUser, IsPossibleAddToBL } from '../../types';
 const FormSearching: React.FC = () => {
 
     const { mainUser } = useTypedSelector(state => state.mainuser);
-    const { repos, repos_error, repos_loading } = useTypedSelector(state => state.repo);
-    const { contribs, contribs_error, contribs_loading } = useTypedSelector(state => state.contrib);
+    const { repos } = useTypedSelector(state => state.repo);
+    const { contribs } = useTypedSelector(state => state.contrib);
+    const { selectedRepo } = useTypedSelector(state => state.selectedRepo);
     const { blacklisters } = useTypedSelector(state => state.blacklist);
     const { reviewer } = useTypedSelector(state => state.reviewer);
 
-    const { setMainUser, fetchRepos, fetchContribs, addBlacklister, removeBlacklister, setReviewer } = useActions();
+    const { setMainUser, fetchRepos, fetchContribs, setSelectedRepo, addBlacklister, removeBlacklister, setReviewer } = useActions();
 
     const [btnText, setBtnText] = useState('Показать настройки');
     const [showOrHideSettings, setShowOrHideSettings] = useState(false);
 
-    const [repo, setRepo] = useState('');
+    //const [repo, setRepo] = useState('');
     const [repoOptions, setRepoOptions] = useState<{ value: string; }[]>([]);
 
     const [contrib, setContrib] = useState('');
@@ -61,7 +60,7 @@ const FormSearching: React.FC = () => {
     useEffect(() => {
         let localRepo = ls.getRepo();
         if (localRepo !== null) {
-            setRepo(localRepo);
+            setSelectedRepo(localRepo);
         }
     }, []);
 
@@ -91,14 +90,14 @@ const FormSearching: React.FC = () => {
     }, [mainUser]);
 
     useEffect(() => {
-        if (repos.filter(item => item.value === repo)) {
+        if (repos.filter(item => item.value === selectedRepo)) {
             const getContribsData = setTimeout(() => {
-                fetchContribs(mainUser, repo);
+                fetchContribs(mainUser, selectedRepo);
             }, 500);
 
             return () => clearTimeout(getContribsData);
         }
-    }, [repo]);
+    }, [selectedRepo]);
 
     useEffect(() => {
         if (!reviewerAddPossible) {
@@ -128,18 +127,12 @@ const FormSearching: React.FC = () => {
     }, [reviewerAddPossible, contribAddPossible]);
 
     const onSearchRepos = (searchText: string) => {
-        console.log(searchText);
-        console.log(repos);
-        console.log(repos[0]);
         setRepoOptions(
             !searchText ? [] : repos.filter(item => item.value.includes(searchText)),
         );
     };
 
     const onSearchContribs = (searchText: string) => {
-        console.log(searchText);
-        console.log(contribs);
-        console.log(contribs[0]);
         setBlContribsOptions(
             !searchText ? [] : contribs.filter(item => item.value.includes(searchText))
         );
@@ -183,9 +176,6 @@ const FormSearching: React.FC = () => {
         // Проверяем, чтобы список контрибьютеров с логинами, отличными от текущего пользователя
         // и которых нет в чёрном списке был не пустым.
 
-        console.log('adonAddReviewerHandlerd');
-        console.log(contribs);
-
         if (contribs.filter(
             item => (item.value != mainUser && blacklisters.filter(blItem => blItem.login === item.value).length === 0))
             .length === 0) {
@@ -223,7 +213,7 @@ const FormSearching: React.FC = () => {
     };
 
     const onChangeRepoHandler = (repo_input: string) => {
-        setRepo(repo_input);
+        setSelectedRepo(repo_input);
         ls.setRepo(repo_input);
     };
 
@@ -252,7 +242,7 @@ const FormSearching: React.FC = () => {
                         placeholder='Логин' />
 
                     <AutoComplete
-                        value={repo}
+                        value={selectedRepo}
                         options={repoOptions}
                         onSearch={onSearchRepos}
                         onChange={onChangeRepoHandler}
