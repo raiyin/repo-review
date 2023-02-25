@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "/repo-review/static/css/main.6621c72a.css",
-    "main.js": "/repo-review/static/js/main.2717d462.js",
+    "main.js": "/repo-review/static/js/main.1c327f91.js",
     "index.html": "/repo-review/index.html",
     "main.6621c72a.css.map": "/repo-review/static/css/main.6621c72a.css.map",
-    "main.2717d462.js.map": "/repo-review/static/js/main.2717d462.js.map"
+    "main.1c327f91.js.map": "/repo-review/static/js/main.1c327f91.js.map"
   },
   "entrypoints": [
     "static/css/main.6621c72a.css",
-    "static/js/main.2717d462.js"
+    "static/js/main.1c327f91.js"
   ]
 }
