@@ -7,6 +7,7 @@ export interface BlackListState {
 export enum BlacklistActionTypes {
     ADD_BLACKLIST_ITEM = 'ADD_BLACKLIST_ITEM',
     REMOVE_BLACKLIST_ITEM = 'REMOVE_BLACKLIST_ITEM',
+    CLEAR_BLACKLIST = 'CLEAR_BLACKLIST'
 }
 
 interface AddBlacklistItemAction {
@@ -19,5 +20,8 @@ interface RemoveBlacklistItemAction {
     payload: GitHubUser;
 }
 
+interface ClearBlacklistAction {
+    type: BlacklistActionTypes.CLEAR_BLACKLIST;
+}
 
-export type BlacklistAction = AddBlacklistItemAction | RemoveBlacklistItemAction;
+export type BlacklistAction = AddBlacklistItemAction | RemoveBlacklistItemAction | ClearBlacklistAction;

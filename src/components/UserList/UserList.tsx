@@ -12,8 +12,8 @@ const BlackList: FC<UserListProps> = ({ blItems, remove }: UserListProps) => {
 
     return (
         <>
-            <div className={cl.leaderboard}>
-                <div className="leaderboard__profiles">
+            <div className={cl.userlist}>
+                <div className="userlist__profiles">
 
                     {blItems.map((blItem) => (
                         <UserListItem key={blItem.login} remove={remove} blItem={blItem} />

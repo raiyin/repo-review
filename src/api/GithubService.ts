@@ -28,7 +28,6 @@ export const getUserRepos = async (user: string) => {
     throw error;
 };
 
-
 export const getRepoContributors = async (user: string, repo: string) => {
     let url = 'https://api.github.com/repos/{user}/{repo}/contributors';
     url = url.replace('{user}', user);

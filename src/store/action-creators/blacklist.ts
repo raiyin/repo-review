@@ -13,3 +13,9 @@ export const removeBlacklister = (user: GitHubUser) => {
         dispatch({ type: BlacklistActionTypes.REMOVE_BLACKLIST_ITEM, payload: user });
     };
 };
+
+export const clearBlacklist = () => {
+    return async (dispatch: Dispatch<BlacklistAction>) => {
+        dispatch({ type: BlacklistActionTypes.CLEAR_BLACKLIST });
+    };
+};

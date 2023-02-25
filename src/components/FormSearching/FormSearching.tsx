@@ -1,15 +1,14 @@
-import React, { useState, useEffect } from 'react';
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { faGear, faUsers } from '@fortawesome/free-solid-svg-icons';
 import { Button, Input, AutoComplete, notification } from 'antd';
-import type { NotificationPlacement } from 'antd/es/notification/interface';
 import MyButton from '../ui/MyButton/MyButton';
 import UserList from '../UserList/UserList';
 import UserListItem from '../UserListItem/UserListItem';
+import type { NotificationPlacement } from 'antd/es/notification/interface';
 import { getRandomInt } from '../../api/utils';
 import * as ls from '../../api/localstorageService';
 import cl from './FormSearching.module.css';
-
+import React, { useState, useEffect } from 'react';
 import { useTypedSelector } from '../../hooks/useTypedSelector';
 import { useActions } from '../../hooks/useActions';
 import { GitHubUser, IsPossibleAddToBL } from '../../types';
@@ -22,20 +21,23 @@ const FormSearching: React.FC = () => {
     const { selectedRepo } = useTypedSelector(state => state.selectedRepo);
     const { blacklisters } = useTypedSelector(state => state.blacklist);
     const { reviewer } = useTypedSelector(state => state.reviewer);
-
-    const { setMainUser, fetchRepos, fetchContribs, setSelectedRepo, addBlacklister, removeBlacklister, setReviewer } = useActions();
+    const {
+        setMainUser,
+        fetchRepos,
+        fetchContribs,
+        setSelectedRepo,
+        addBlacklister,
+        removeBlacklister,
+        clearBlacklist,
+        setReviewer } = useActions();
 
     const [btnText, setBtnText] = useState('Показать настройки');
     const [showOrHideSettings, setShowOrHideSettings] = useState(false);
-
     const [repoOptions, setRepoOptions] = useState<{ value: string; }[]>([]);
-
     const [contrib, setContrib] = useState('');
     const [blContribsOptions, setBlContribsOptions] = useState<{ value: string; }[]>([]);
-
     const [reviewerAddPossible, setReviewerAddPossible] = useState(true);
     const [contribAddPossible, setContribAddPossible] = useState<IsPossibleAddToBL>(IsPossibleAddToBL.Yes);
-
     const [api, contextHolder] = notification.useNotification();
 
     const openNotification = (placement: NotificationPlacement, title: string, message: string) => {
@@ -66,6 +68,7 @@ const FormSearching: React.FC = () => {
     useEffect(() => {
         let localBlackList = ls.getAllUsersFromBlackList();
         if (localBlackList !== null) {
+            clearBlacklist();
             let tempArray = localBlackList.map(item => ({ 'login': item.login, 'avatar_url': item.avatar_url }));
             tempArray.map(blacklister => addBlacklister(blacklister));
         }
