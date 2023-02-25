@@ -7,9 +7,9 @@ const initialState: BlackListState = {
 export const blacklistReducer = (state = initialState, action: BlacklistAction): BlackListState => {
     switch (action.type) {
         case BlacklistActionTypes.ADD_BLACKLIST_ITEM:
-            return { blacklisters: action.payload };
+            return { blacklisters: [...state.blacklisters, action.payload] };
         case BlacklistActionTypes.REMOVE_BLACKLIST_ITEM:
-            return { blacklisters: action.payload };
+            return { blacklisters: state.blacklisters.filter(item => item.login != action.payload.login) };
         default:
             return state;
     }

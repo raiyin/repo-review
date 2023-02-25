@@ -9,42 +9,31 @@ import UserList from '../UserList/UserList';
 import UserListItem from '../UserListItem/UserListItem';
 import { getRandomInt } from '../../api/utils';
 import * as ls from '../../api/localstorageService';
-import { GitHubContribObject, getUserRepos, getRepoContributors } from '../../api/githubService';
-import { useFetching } from '../../hooks/useFetching';
+import { getUserRepos, getRepoContributors } from '../../api/githubService';
 import cl from './FormSearching.module.css';
 
 import { useTypedSelector } from '../../hooks/useTypedSelector';
 import { useActions } from '../../hooks/useActions';
-
-enum IsPossibleAddToBL {
-    Yes = 1,
-    NoCurrentUser,
-    NoRepeat,
-    NoNoexistUser,
-    NoEmptyString
-}
+import { GitHubUser, IsPossibleAddToBL } from '../../types';
 
 const FormSearching: React.FC = () => {
 
+    const { mainUser } = useTypedSelector(state => state.mainuser);
     const { repos, repos_error, repos_loading } = useTypedSelector(state => state.repo);
     const { contribs, contribs_error, contribs_loading } = useTypedSelector(state => state.contrib);
-    const { fetchRepos, fetchContribs } = useActions();
+    const { blacklisters } = useTypedSelector(state => state.blacklist);
+    const { reviewer } = useTypedSelector(state => state.reviewer);
+
+    const { setMainUser, fetchRepos, fetchContribs, addBlacklister, removeBlacklister, setReviewer } = useActions();
 
     const [btnText, setBtnText] = useState('Показать настройки');
     const [showOrHideSettings, setShowOrHideSettings] = useState(false);
 
-    const [user, setUser] = useState('');
-
     const [repo, setRepo] = useState('');
-    //const [userRepos, setUserRepos] = useState<{ value: string; }[]>([]);
     const [repoOptions, setRepoOptions] = useState<{ value: string; }[]>([]);
 
     const [contrib, setContrib] = useState('');
-    //const [repoContribs, setRepoContribs] = useState<Array<GitHubContribObject>>([]);
     const [blContribsOptions, setBlContribsOptions] = useState<{ value: string; }[]>([]);
-
-    const [blItems, setBlItems] = useState<Array<GitHubContribObject>>([]);
-    const [reviewer, setReviewer] = useState<GitHubContribObject | null>(null);
 
     const [reviewerAddPossible, setReviewerAddPossible] = useState(true);
     const [contribAddPossible, setContribAddPossible] = useState<IsPossibleAddToBL>(IsPossibleAddToBL.Yes);
@@ -62,19 +51,10 @@ const FormSearching: React.FC = () => {
     library.add(faGear);
     library.add(faUsers);
 
-    // const [fetchContribs] = useFetching(async (user: string, repo: string) => {
-    //     let response: GitHubContribObject[];
-    //     if (!repo || !user)
-    //         response = [];
-    //     else
-    //         response = await getRepoContributors(user, repo);
-    //     setRepoContribs(response);
-    // });
-
     useEffect(() => {
         let localUser = ls.getMainUser();
         if (localUser !== null) {
-            setUser(localUser);
+            setMainUser(localUser);
         }
     }, []);
 
@@ -89,7 +69,7 @@ const FormSearching: React.FC = () => {
         let localBlackList = ls.getAllUsersFromBlackList();
         if (localBlackList !== null) {
             let tempArray = localBlackList.map(item => ({ 'login': item.login, 'avatar_url': item.avatar_url }));
-            setBlItems(tempArray);
+            tempArray.map(blacklister => addBlacklister(blacklister));
         }
     }, []);
 
@@ -105,14 +85,15 @@ const FormSearching: React.FC = () => {
     }, []);
 
     useEffect(() => {
-        console.log(user);
-        fetchRepos(user);
-    }, [user]);
+        if (!mainUser) {
+            fetchRepos(mainUser);
+        }
+    }, [mainUser]);
 
     useEffect(() => {
         if (repos.filter(item => item.value === repo)) {
             const getContribsData = setTimeout(() => {
-                fetchContribs(user, repo);
+                fetchContribs(mainUser, repo);
             }, 500);
 
             return () => clearTimeout(getContribsData);
@@ -166,7 +147,7 @@ const FormSearching: React.FC = () => {
 
     const onAddUserToBlackListHandler = () => {
         // Защищаем от добавления в чёрный список текущего пользователя.
-        if (user === contrib) {
+        if (mainUser === contrib) {
             setContribAddPossible(IsPossibleAddToBL.NoCurrentUser);
             return;
         }
@@ -178,22 +159,23 @@ const FormSearching: React.FC = () => {
         }
 
         // Защищаем от повторного добавления в чёрный список.
-        if (blItems.filter(item => item.login === contrib).length !== 0) {
+        if (blacklisters.filter(item => item.login === contrib).length !== 0) {
             setContribAddPossible(IsPossibleAddToBL.NoRepeat);
             return;
         }
 
-        const newBlItem = {
+        const newBlacklister = {
             login: contrib,
             avatar_url: contribs.filter(item => item.value === contrib)[0].avatar_url
         };
-        setBlItems([...blItems, newBlItem]);
-        ls.addUserToBlackList(newBlItem.login, newBlItem.avatar_url);
+
+        addBlacklister(newBlacklister);
+        ls.addUserToBlackList(newBlacklister.login, newBlacklister.avatar_url);
     };
 
-    const removeBlItem = (blItem: GitHubContribObject) => {
-        setBlItems(blItems.filter(item => item.login !== blItem.login));
-        ls.removeUserFromBlackList(blItem.login);
+    const removeBlItem = (blacklister: GitHubUser) => {
+        removeBlacklister(blacklister);
+        ls.removeUserFromBlackList(blacklister.login);
     };
 
     const onAddReviewerHandler = (e: React.MouseEvent) => {
@@ -205,7 +187,7 @@ const FormSearching: React.FC = () => {
         console.log(contribs);
 
         if (contribs.filter(
-            item => (item.value != user && blItems.filter(blItem => blItem.login === item.value).length === 0))
+            item => (item.value != mainUser && blacklisters.filter(blItem => blItem.login === item.value).length === 0))
             .length === 0) {
             setReviewerAddPossible(false);
             return;
@@ -214,7 +196,7 @@ const FormSearching: React.FC = () => {
         // Генерируем ревьюера.
         let timerId = setInterval(() => {
             let candidateIndex = getRandomInt(contribs.length);
-            while (blItems.filter(item => item.login === contribs[candidateIndex].value).length !== 0) {
+            while (blacklisters.filter(item => item.login === contribs[candidateIndex].value).length !== 0) {
                 candidateIndex = getRandomInt(contribs.length);
             }
             let candidate = contribs[candidateIndex];
@@ -236,7 +218,7 @@ const FormSearching: React.FC = () => {
     };
 
     const onChangeUserHandler = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setUser(event.currentTarget.value);
+        setMainUser(event.currentTarget.value);
         ls.setMainUser(event.currentTarget.value);
     };
 
@@ -263,7 +245,7 @@ const FormSearching: React.FC = () => {
             {showOrHideSettings ? (
                 <>
                     <Input
-                        value={user}
+                        value={mainUser}
                         onChange={onChangeUserHandler}
                         type='text'
                         name='login'
@@ -284,7 +266,7 @@ const FormSearching: React.FC = () => {
                         placeholder='Добавить в чёрный список' />
 
                     <Button onClick={onAddUserToBlackListHandler} disabled={contrib.length === 0}>Добавить в чёрный список</Button>
-                    <UserList blItems={blItems} remove={removeBlItem}></UserList>
+                    <UserList blItems={blacklisters} remove={removeBlItem}></UserList>
                     <Button onClick={onAddReviewerHandler} >Генерировать ревьюера</Button>
 
                     {reviewer !== null ?

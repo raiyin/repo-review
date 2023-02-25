@@ -1,21 +1,14 @@
-import { GitHubUser } from "../../types";
+import { ReviewerAction, ReviewerActionTypes, ReviewerState } from '../../types/reviewer';
 
-const SET_REVIEWER = "SET_REVIEWER";
-
-const defaultState = {
-    reviewer: {},
+const initialState: ReviewerState = {
+    reviewer: null
 };
 
-export function userReducer(state = defaultState, action: { type: string, payload: GitHubUser; }) {
+export const reviewerReducer = (state = initialState, action: ReviewerAction): ReviewerState => {
     switch (action.type) {
-        case SET_REVIEWER:
-            return {
-                ...state,
-                reviewer: action.payload
-            };
+        case ReviewerActionTypes.SET_REVIEWER:
+            return { reviewer: action.payload };
         default:
             return state;
     }
-}
-
-export const setReviewerAction = (payload: GitHubUser) => ({ type: SET_REVIEWER, payload });
+};

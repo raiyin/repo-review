@@ -11,12 +11,12 @@ export enum BlacklistActionTypes {
 
 interface AddBlacklistItemAction {
     type: BlacklistActionTypes.ADD_BLACKLIST_ITEM;
-    payload: any[];
+    payload: GitHubUser;
 }
 
 interface RemoveBlacklistItemAction {
     type: BlacklistActionTypes.REMOVE_BLACKLIST_ITEM;
-    payload: any[];
+    payload: GitHubUser;
 }
 
 
