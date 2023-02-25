@@ -28,7 +28,6 @@ const FormSearching: React.FC = () => {
     const [btnText, setBtnText] = useState('Показать настройки');
     const [showOrHideSettings, setShowOrHideSettings] = useState(false);
 
-    //const [repo, setRepo] = useState('');
     const [repoOptions, setRepoOptions] = useState<{ value: string; }[]>([]);
 
     const [contrib, setContrib] = useState('');
@@ -84,7 +83,7 @@ const FormSearching: React.FC = () => {
     }, []);
 
     useEffect(() => {
-        if (!mainUser) {
+        if (mainUser.length > 0) {
             fetchRepos(mainUser);
         }
     }, [mainUser]);
