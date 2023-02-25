@@ -3,7 +3,7 @@ import MyButton from '../ui/MyButton/MyButton';
 import cl from './UserListItem.module.css';
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { faXmark } from '@fortawesome/free-solid-svg-icons';
-import { BlackListItem, GitHubUser } from '../../types';
+import { BlackListItem } from '../../types';
 
 
 const BlackList: React.FC<BlackListItem> = ({ blItem, remove }) => {

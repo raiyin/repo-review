@@ -12,7 +12,7 @@ export const blacklistReducer = (state = initialState, action: BlacklistAction):
             }
             return state;
         case BlacklistActionTypes.REMOVE_BLACKLIST_ITEM:
-            return { blacklisters: state.blacklisters.filter(item => item.login != action.payload.login) };
+            return { blacklisters: state.blacklisters.filter(item => item.login !== action.payload.login) };
         case BlacklistActionTypes.CLEAR_BLACKLIST:
             return { blacklisters: [] };
         default:
