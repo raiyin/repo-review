@@ -1,10 +1,7 @@
+import { GitHubUser } from "../types";
+
 export interface GitHubRepoObject {
     name: string;
-}
-
-export interface GitHubContribObject {
-    login: string;
-    avatar_url: string;
 }
 
 export const getUserRepos = async (user: string) => {
@@ -31,7 +28,6 @@ export const getUserRepos = async (user: string) => {
     throw error;
 };
 
-
 export const getRepoContributors = async (user: string, repo: string) => {
     let url = 'https://api.github.com/repos/{user}/{repo}/contributors';
     url = url.replace('{user}', user);
@@ -45,8 +41,8 @@ export const getRepoContributors = async (user: string, repo: string) => {
     });
 
     if (response.ok) {
-        let contribsArray: Array<GitHubContribObject> = await response.json();
-        let contribsNames: Array<GitHubContribObject> = contribsArray.map(item => ({ login: item.login, avatar_url: item.avatar_url }));
+        let contribsArray: Array<GitHubUser> = await response.json();
+        let contribsNames: Array<GitHubUser> = contribsArray.map(item => ({ login: item.login, avatar_url: item.avatar_url }));
         return contribsNames;
     }
 

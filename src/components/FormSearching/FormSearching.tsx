@@ -1,45 +1,43 @@
-import React, { useState, useEffect } from 'react';
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { faGear, faUsers } from '@fortawesome/free-solid-svg-icons';
 import { Button, Input, AutoComplete, notification } from 'antd';
-import type { NotificationPlacement } from 'antd/es/notification/interface';
 import MyButton from '../ui/MyButton/MyButton';
 import UserList from '../UserList/UserList';
 import UserListItem from '../UserListItem/UserListItem';
+import type { NotificationPlacement } from 'antd/es/notification/interface';
 import { getRandomInt } from '../../api/utils';
 import * as ls from '../../api/localstorageService';
-import { GitHubContribObject, getUserRepos, getRepoContributors } from '../../api/githubService';
-import { useFetching } from '../../hooks/useFetching';
 import cl from './FormSearching.module.css';
+import React, { useState, useEffect } from 'react';
+import { useTypedSelector } from '../../hooks/useTypedSelector';
+import { useActions } from '../../hooks/useActions';
+import { GitHubUser, IsPossibleAddToBL } from '../../types';
 
-enum IsPossibleAddToBL {
-    Yes = 1,
-    NoCurrentUser,
-    NoRepeat,
-    NoNoexistUser,
-    NoEmptyString
-}
+const FormSearching: React.FC = () => {
 
-export default function FormSearching() {
+    const { mainUser } = useTypedSelector(state => state.mainuser);
+    const { repos } = useTypedSelector(state => state.repo);
+    const { contribs } = useTypedSelector(state => state.contrib);
+    const { selectedRepo } = useTypedSelector(state => state.selectedRepo);
+    const { blacklisters } = useTypedSelector(state => state.blacklist);
+    const { reviewer } = useTypedSelector(state => state.reviewer);
+    const {
+        setMainUser,
+        fetchRepos,
+        fetchContribs,
+        setSelectedRepo,
+        addBlacklister,
+        removeBlacklister,
+        clearBlacklist,
+        setReviewer } = useActions();
+
     const [btnText, setBtnText] = useState('Показать настройки');
     const [showOrHideSettings, setShowOrHideSettings] = useState(false);
-
-    const [user, setUser] = useState('');
-
-    const [repo, setRepo] = useState('');
-    const [userRepos, setUserRepos] = useState<{ value: string; }[]>([]);
     const [repoOptions, setRepoOptions] = useState<{ value: string; }[]>([]);
-
     const [contrib, setContrib] = useState('');
-    const [repoContribs, setRepoContribs] = useState<Array<GitHubContribObject>>([]);
     const [blContribsOptions, setBlContribsOptions] = useState<{ value: string; }[]>([]);
-
-    const [blItems, setBlItems] = useState<Array<GitHubContribObject>>([]);
-    const [reviewer, setReviewer] = useState<GitHubContribObject | null>(null);
-
     const [reviewerAddPossible, setReviewerAddPossible] = useState(true);
     const [contribAddPossible, setContribAddPossible] = useState<IsPossibleAddToBL>(IsPossibleAddToBL.Yes);
-
     const [api, contextHolder] = notification.useNotification();
 
     const openNotification = (placement: NotificationPlacement, title: string, message: string) => {
@@ -53,45 +51,26 @@ export default function FormSearching() {
     library.add(faGear);
     library.add(faUsers);
 
-    const [fetchRepos] = useFetching(async (user: string) => {
-        let response: string[];
-        if (!user)
-            response = [];
-        else
-            response = await getUserRepos(user);
-
-        let responseObj: Array<{ value: string; }> = response.map(item => ({ value: item }));
-        setUserRepos(responseObj);
-    });
-
-    const [fetchContribs] = useFetching(async (user: string, repo: string) => {
-        let response: GitHubContribObject[];
-        if (!repo || !user)
-            response = [];
-        else
-            response = await getRepoContributors(user, repo);
-        setRepoContribs(response);
-    });
-
     useEffect(() => {
         let localUser = ls.getMainUser();
         if (localUser !== null) {
-            setUser(localUser);
+            setMainUser(localUser);
         }
     }, []);
 
     useEffect(() => {
         let localRepo = ls.getRepo();
         if (localRepo !== null) {
-            setRepo(localRepo);
+            setSelectedRepo(localRepo);
         }
     }, []);
 
     useEffect(() => {
         let localBlackList = ls.getAllUsersFromBlackList();
         if (localBlackList !== null) {
+            clearBlacklist();
             let tempArray = localBlackList.map(item => ({ 'login': item.login, 'avatar_url': item.avatar_url }));
-            setBlItems(tempArray);
+            tempArray.map(blacklister => addBlacklister(blacklister));
         }
     }, []);
 
@@ -107,25 +86,20 @@ export default function FormSearching() {
     }, []);
 
     useEffect(() => {
-        setRepoContribs([]);
-
-        const getReposData = setTimeout(() => {
-            fetchRepos(user);
-        }, 500);
-
-        return () => clearTimeout(getReposData);
-
-    }, [user]);
+        if (mainUser.length > 0) {
+            fetchRepos(mainUser);
+        }
+    }, [mainUser]);
 
     useEffect(() => {
-        if (userRepos.filter((item: { value: string; }) => item.value === repo)) {
+        if (repos.filter(item => item.value === selectedRepo)) {
             const getContribsData = setTimeout(() => {
-                fetchContribs(user, repo);
+                fetchContribs(mainUser, selectedRepo);
             }, 500);
 
             return () => clearTimeout(getContribsData);
         }
-    }, [repo]);
+    }, [selectedRepo]);
 
     useEffect(() => {
         if (!reviewerAddPossible) {
@@ -156,54 +130,56 @@ export default function FormSearching() {
 
     const onSearchRepos = (searchText: string) => {
         setRepoOptions(
-            !searchText ? [] : userRepos.filter((item: { value: string; }) => item.value.includes(searchText)),
+            !searchText ? [] : repos.filter(item => item.value.includes(searchText)),
         );
     };
 
     const onSearchContribs = (searchText: string) => {
         setBlContribsOptions(
-            !searchText ? [] : repoContribs.filter((item: GitHubContribObject) => item.login.includes(searchText)).map(item => ({ value: item.login })),
+            !searchText ? [] : contribs.filter(item => item.value.includes(searchText))
         );
     };
 
     const onAddUserToBlackListHandler = () => {
         // Защищаем от добавления в чёрный список текущего пользователя.
-        if (user === contrib) {
+        if (mainUser === contrib) {
             setContribAddPossible(IsPossibleAddToBL.NoCurrentUser);
             return;
         }
 
         // Защищаем от добавления в чёрный список несуществующего пользователя.
-        if (repoContribs.filter(item => item.login === contrib).length === 0) {
+        if (contribs.filter(item => item.value === contrib).length === 0) {
             setContribAddPossible(IsPossibleAddToBL.NoNoexistUser);
             return;
         }
 
         // Защищаем от повторного добавления в чёрный список.
-        if (blItems.filter(item => item.login === contrib).length !== 0) {
+        if (blacklisters.filter(item => item.login === contrib).length !== 0) {
             setContribAddPossible(IsPossibleAddToBL.NoRepeat);
             return;
         }
 
-        const newBlItem = {
+        const newBlacklister = {
             login: contrib,
-            avatar_url: repoContribs.filter(item => item.login === contrib)[0].avatar_url
+            avatar_url: contribs.filter(item => item.value === contrib)[0].avatar_url
         };
-        setBlItems([...blItems, newBlItem]);
-        ls.addUserToBlackList(newBlItem.login, newBlItem.avatar_url);
+
+        addBlacklister(newBlacklister);
+        ls.addUserToBlackList(newBlacklister.login, newBlacklister.avatar_url);
     };
 
-    const removeBlItem = (blItem: GitHubContribObject) => {
-        setBlItems(blItems.filter(item => item.login !== blItem.login));
-        ls.removeUserFromBlackList(blItem.login);
+    const removeBlItem = (blacklister: GitHubUser) => {
+        removeBlacklister(blacklister);
+        ls.removeUserFromBlackList(blacklister.login);
     };
 
     const onAddReviewerHandler = (e: React.MouseEvent) => {
         // Проверка возможности найти ревьюера.
         // Проверяем, чтобы список контрибьютеров с логинами, отличными от текущего пользователя
         // и которых нет в чёрном списке был не пустым.
-        if (repoContribs.filter(
-            item => (item.login != user && blItems.filter(blItem => blItem.login === item.login).length === 0))
+
+        if (contribs.filter(
+            item => (item.value != mainUser && blacklisters.filter(blItem => blItem.login === item.value).length === 0))
             .length === 0) {
             setReviewerAddPossible(false);
             return;
@@ -211,13 +187,13 @@ export default function FormSearching() {
 
         // Генерируем ревьюера.
         let timerId = setInterval(() => {
-            let candidateIndex = getRandomInt(repoContribs.length);
-            while (blItems.filter(item => item.login === repoContribs[candidateIndex].login).length !== 0) {
-                candidateIndex = getRandomInt(repoContribs.length);
+            let candidateIndex = getRandomInt(contribs.length);
+            while (blacklisters.filter(item => item.login === contribs[candidateIndex].value).length !== 0) {
+                candidateIndex = getRandomInt(contribs.length);
             }
-            let candidate = repoContribs[candidateIndex];
+            let candidate = contribs[candidateIndex];
             const newReviewer = {
-                login: candidate.login,
+                login: candidate.value,
                 avatar_url: candidate.avatar_url
             };
             setReviewer(newReviewer);
@@ -234,13 +210,13 @@ export default function FormSearching() {
     };
 
     const onChangeUserHandler = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setUser(event.currentTarget.value);
+        setMainUser(event.currentTarget.value);
         ls.setMainUser(event.currentTarget.value);
     };
 
-    const onChangeRepoHandler = (repo: string) => {
-        setRepo(repo);
-        ls.setRepo(repo);
+    const onChangeRepoHandler = (repo_input: string) => {
+        setSelectedRepo(repo_input);
+        ls.setRepo(repo_input);
     };
 
     const onChangeContribHandler = (contributor: string) => {
@@ -261,14 +237,14 @@ export default function FormSearching() {
             {showOrHideSettings ? (
                 <>
                     <Input
-                        value={user}
+                        value={mainUser}
                         onChange={onChangeUserHandler}
                         type='text'
                         name='login'
                         placeholder='Логин' />
 
                     <AutoComplete
-                        value={repo}
+                        value={selectedRepo}
                         options={repoOptions}
                         onSearch={onSearchRepos}
                         onChange={onChangeRepoHandler}
@@ -282,7 +258,7 @@ export default function FormSearching() {
                         placeholder='Добавить в чёрный список' />
 
                     <Button onClick={onAddUserToBlackListHandler} disabled={contrib.length === 0}>Добавить в чёрный список</Button>
-                    <UserList blItems={blItems} remove={removeBlItem}></UserList>
+                    <UserList blItems={blacklisters} remove={removeBlItem}></UserList>
                     <Button onClick={onAddReviewerHandler} >Генерировать ревьюера</Button>
 
                     {reviewer !== null ?
@@ -296,4 +272,6 @@ export default function FormSearching() {
             )}
         </div>
     );
-}
+};
+
+export default FormSearching;

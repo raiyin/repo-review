@@ -1,5 +1,3 @@
-import React from 'react';
-import './styles/App.css';
 import FormSearching from './components/FormSearching/FormSearching';
 
 function App() {
